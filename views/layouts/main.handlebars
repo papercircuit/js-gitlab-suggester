@@ -1,0 +1,21 @@
+<!-- views/layouts/main.handlebars -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitLab Issue Helper</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        select, button { margin: 5px; }
+        .error { color: red; }
+        .details { margin-top: 20px; }
+        pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>GitLab Issue Helper</h1>
+    <div class="error">{{error}}</div>
+    {{{body}}}
+</body>
+</html>
