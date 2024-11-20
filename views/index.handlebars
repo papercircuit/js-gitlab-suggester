@@ -6,158 +6,369 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitLab Issue Helper</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        select, button { margin: 5px; }
-        .error { color: red; }
-        .details { margin-top: 20px; }
-        pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; }
-        .suggestions {
-            margin-top: 20px;
+        body { 
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
-            background: #f8f9fa;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .loading.active {
+            display: block;
+        }
+        #suggestions-container {
+            margin-top: 20px;
+        }
+        .suggestion-card {
+            border: 1px solid #ddd;
             border-radius: 8px;
-        }
-        .suggestion-section {
             margin: 15px 0;
-            padding: 15px;
-            border-left: 4px solid #0366d6;
-            background: white;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .suggestion-type {
+        .file-changes {
+            background: #f6f8fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .progress-status {
+            margin: 10px 0;
+            color: #666;
+            font-style: italic;
+        }
+        .error-message {
+            color: #dc3545;
             margin: 10px 0;
             padding: 10px;
-            background: #f1f8ff;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
             border-radius: 4px;
+            display: none;
         }
-        .files-section, .patterns-section {
+        .in-progress {
+            color: #0366d6;
+            font-weight: bold;
+        }
+        .completed {
+            color: #28a745;
+        }
+        .failed {
+            color: #dc3545;
+        }
+        .issue-card {
+            border: 1px solid #ddd;
             margin: 10px 0;
-        }
-        .files-section ul, .patterns-section ul {
-            list-style-type: none;
-            padding-left: 20px;
-        }
-        .files-section li, .patterns-section li {
-            margin: 5px 0;
-            padding: 5px 10px;
-            background: white;
+            padding: 15px;
             border-radius: 4px;
-            border: 1px solid #e1e4e8;
+            background-color: #f8f9fa;
+        }
+
+        .issue-card h4 {
+            margin: 0 0 10px 0;
+            color: #0366d6;
+        }
+
+        .issue-card p {
+            margin: 5px 0;
+        }
+
+        .issue-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .similarity-score {
+            font-weight: bold;
+            color: #28a745;
         }
     </style>
 </head>
 <body>
     <h1>GitLab Issue Helper</h1>
     <div class="error">{{error}}</div>
-    <!-- views/index.handlebars -->
-<form action="/fetch-user-issues" method="post">
-    <label for="username">Username:</label>
-    <input type="text" id="username" name="username" placeholder="Enter GitLab username" value="{{username}}">
-    <button type="submit">Fetch Issues</button>
-</form>
-<br>
-<form action="/fetch-similar-closed-issues" method="post">
-    <label for="issues">Select an Issue:</label>
-    <select id="issues" name="issueId" onchange="this.form.submit()">
-        <option value="">Select an issue</option>
-        {{#each issues}}
-            <option value="{{this.id}}" {{#if (eq ../selectedIssueId this.id)}}selected{{/if}}>{{this.title}}</option>
-        {{/each}}
-    </select>
-    <input type="hidden" name="userId" value="{{userId}}">
-    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
-    <input type="hidden" name="issueTitle" value='{{#if issues.length}}{{issues.0.title}}{{/if}}'>
-</form>
-<br>
-<form action="/fetch-merge-requests" method="post">
-    <label for="similarIssues">Similar Closed Issues:</label>
-    <select id="similarIssues" name="issueId" onchange="this.form.submit()">
-        <option value="">Select a closed issue</option>
-        {{#each similarIssues}}
-            <option value="{{this.id}}" {{#if (eq ../selectedSimilarIssueId this.id)}}selected{{/if}}>
-                ({{this.relevanceScore}}%) {{this.title}}
-            </option>
-        {{/each}}
-    </select>
-    <input type="hidden" name="userId" value="{{userId}}">
-    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
-    <input type="hidden" name="similarIssues" value='{{jsonStringify similarIssues}}'>
-</form>
-<br>
-<form action="/fetch-merge-request-details" method="post">
-    <label for="mergeRequests">Merge Requests:</label>
-    <select id="mergeRequests" name="mergeRequestId" onchange="this.form.submit()">
-        <option value="">Select a merge request</option>
-        {{#each mergeRequests}}
-            <option value="{{this.id}}" {{#if (eq ../selectedMergeRequestId this.id)}}selected{{/if}}>{{this.iid}} - {{this.title}}</option>
-        {{/each}}
-    </select>
-    <input type="hidden" name="userId" value="{{userId}}">
-    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
-    <input type="hidden" name="similarIssues" value='{{jsonStringify similarIssues}}'>
-    <input type="hidden" name="mergeRequests" value='{{jsonStringify mergeRequests}}'>
-</form>
-<div class="details">
-    {{#if mergeRequestDetails}}
-        <h2>Merge Request Details</h2>
-        <p><strong>ID:</strong> {{mergeRequestDetails.iid}}</p>
-        <p><strong>Title:</strong> {{mergeRequestDetails.title}}</p>
-        <p><strong>Description:</strong> {{mergeRequestDetails.description}}</p>
-        <h3>Changes</h3>
-        <ul>
-            {{#each mergeRequestDetails.diffs.diffs}}
-                <li><strong>File:</strong> {{this.new_path}}</li>
-                <li><strong>Changes:</strong> <pre>{{this.diff}}</pre></li>
+
+    <div id="rateLimitInfo" style="margin: 10px 0; font-size: 0.9em; color: #666;">
+        Rate Limit: <span id="rateLimit">-</span> | 
+        Remaining: <span id="rateLimitRemaining">-</span> | 
+        Reset Time: <span id="rateLimitReset">-</span>
+    </div>
+
+    <form id="issueForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" value="{{username}}" placeholder="Enter GitLab username">
+        <button type="submit">Fetch Issues</button>
+    </form>
+
+    <div id="issueSelect" style="margin-top: 20px;">
+        <label for="issues">Select an Issue:</label>
+        <select id="issues" name="issueId">
+            <option value="">Select an issue</option>
+            {{#each issues}}
+                <option value="{{this.id}}" data-title="{{this.title}}">{{this.title}}</option>
             {{/each}}
-        </ul>
-    {{/if}}
-</div>
-<div class="suggestions">
-    {{#each similarIssues}}
-        {{#if this.suggestions.length}}
-            <div class="suggestion-section">
-                <h3>Suggestions for Similar Issue: {{this.title}}</h3>
-                {{#each this.suggestions}}
-                    <div class="suggestion-type">
-                        <h4>{{this.type}} Changes</h4>
-                        <p>{{this.suggestion}}</p>
-                        <div class="files-section">
-                            <h5>Files to Update:</h5>
+        </select>
+        
+        <div style="margin-top: 10px;">
+            <label for="similarityThreshold">Minimum Similarity Threshold:</label>
+            <input type="number" id="similarityThreshold" min="0" max="100" value="40" style="width: 60px;">%
+        </div>
+    </div>
+
+    <div id="loading" class="loading">
+        <p>Analyzing similar issues and generating suggestions...</p>
+    </div>
+
+    <div id="suggestions-container"></div>
+
+    <div id="analysis-progress" style="display: none;">
+        <h3>Analysis Progress</h3>
+        
+        <div id="similar-issues-section">
+            <h4>Step 1: Finding Similar Issues</h4>
+            <div class="progress-status">Status: <span id="similar-issues-status">Waiting...</span></div>
+            <div id="similar-issues-list"></div>
+        </div>
+
+        <div id="merge-requests-section" style="display: none;">
+            <h4>Step 2: Analyzing Merge Requests</h4>
+            <div class="progress-status">Status: <span id="merge-requests-status">Waiting...</span></div>
+            <div id="merge-requests-list"></div>
+        </div>
+
+        <div id="suggestions-section" style="display: none;">
+            <h4>Step 3: Generating Suggestions</h4>
+            <div class="progress-status">Status: <span id="suggestions-status">Waiting...</span></div>
+            <div id="file-suggestions-list"></div>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+    </div>
+
+    <script>
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            try {
+                const response = await fetch('/fetch-user-issues', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.querySelector('.error').textContent = data.error;
+                    return;
+                }
+
+                document.getElementById('rateLimit').textContent = data.rateLimit.limit;
+                document.getElementById('rateLimitRemaining').textContent = data.rateLimit.remaining;
+                document.getElementById('rateLimitReset').textContent = data.rateLimit.resetTime;
+
+                const select = document.getElementById('issues');
+                select.innerHTML = '<option value="">Select an issue</option>';
+                data.issues.forEach(issue => {
+                    const option = document.createElement('option');
+                    option.value = issue.id;
+                    option.textContent = issue.title;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.error').textContent = error.message;
+            }
+        });
+
+        document.getElementById('issues').addEventListener('change', function() {
+            const issueId = this.value;
+            const issueTitle = this.options[this.selectedIndex].textContent;
+            
+            if (issueId && issueTitle) {
+                analyzeSimilarIssues(issueId, issueTitle);
+            }
+        });
+
+        function displaySuggestions(data) {
+            const container = document.getElementById('suggestions-container');
+            container.innerHTML = data.suggestions.map(suggestion => `
+                <div class="suggestion-card">
+                    <h3>${suggestion.type} Changes</h3>
+                    <p>${suggestion.suggestion}</p>
+                    <div class="file-changes">
+                        <h4>Files to Update:</h4>
+                        <ul>
+                            ${suggestion.files.map(file => `<li>${file}</li>`).join('')}
+                        </ul>
+                        <h4>Suggested Changes:</h4>
+                        <ul>
+                            ${suggestion.commonPatterns.map(pattern => `<li>${pattern}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateIssuesDropdown(issues) {
+            const select = document.getElementById('issues');
+            select.innerHTML = '<option value="">Select an issue</option>' +
+                issues.map(issue => `
+                    <option value="${issue.id}" data-title="${issue.title}">
+                        ${issue.title}
+                    </option>
+                `).join('');
+        }
+
+        async function fetchInitialRateLimit() {
+            try {
+                const response = await fetch('/initial-rate-limit');
+                const data = await response.json();
+                if (data.rateLimit) {
+                    document.getElementById('rateLimit').textContent = data.rateLimit.limit;
+                    document.getElementById('rateLimitRemaining').textContent = data.rateLimit.remaining;
+                    document.getElementById('rateLimitReset').textContent = data.rateLimit.resetTime;
+                }
+            } catch (error) {
+                console.error('Error fetching initial rate limit:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchInitialRateLimit);
+
+        async function analyzeSimilarIssues(issueId, issueTitle) {
+            if (!issueId || !issueTitle) {
+                console.error('Missing required parameters:', { issueId, issueTitle });
+                return;
+            }
+
+            const threshold = document.getElementById('similarityThreshold').value / 100;
+            
+            // Reset and show progress container
+            document.getElementById('analysis-progress').style.display = 'block';
+            document.getElementById('error-message').style.display = 'none';
+            document.getElementById('similar-issues-status').textContent = 'Starting...';
+            document.getElementById('similar-issues-status').className = 'in-progress';
+            
+            const timeoutId = setTimeout(() => {
+                if (document.getElementById('suggestions-status').textContent === 'pending') {
+                    document.getElementById('suggestions-status').textContent = 'failed';
+                    document.getElementById('file-suggestions-list').innerHTML = 
+                        '<p>Analysis timed out. Please try again.</p>';
+                }
+            }, 30000); // 30 second timeout
+            
+            try {
+                const response = await fetch('/analyze-issue', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        issueId, 
+                        issueTitle: issueTitle.trim(),
+                        threshold 
+                    })
+                });
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Update status for each step
+                if (data.status) {
+                    updateStepStatus('similar-issues-status', data.status.similarIssues);
+                    updateStepStatus('merge-requests-status', data.status.mergeRequests);
+                    updateStepStatus('suggestions-status', data.status.suggestions);
+                }
+                
+                // Display results
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error analyzing issue:', error);
+                document.getElementById('error-message').textContent = error.message;
+                document.getElementById('error-message').style.display = 'block';
+                updateStepStatus('similar-issues-status', 'failed');
+            }
+        }
+
+        function updateStepStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            element.className = status === 'completed' ? 'completed' : 
+                               status === 'failed' ? 'failed' : 
+                               'in-progress';
+        }
+
+        function displayResults(data) {
+            // Update similar issues section
+            document.getElementById('similar-issues-status').textContent = data.status?.similarIssues || 'completed';
+            const similarIssuesList = document.getElementById('similar-issues-list');
+            similarIssuesList.innerHTML = data.similarIssues.map(issue => `
+                <div class="issue-card">
+                    <h4>${issue.title}</h4>
+                    <p class="similarity-score">Similarity: ${issue.similarity}</p>
+                    <p class="issue-details">
+                        ID: ${issue.id}<br>
+                        State: ${issue.state}<br>
+                        Created: ${new Date(issue.created_at).toLocaleDateString()}
+                    </p>
+                </div>
+            `).join('');
+
+            // Show and update merge requests section
+            const mergeRequestsSection = document.getElementById('merge-requests-section');
+            mergeRequestsSection.style.display = 'block';
+            document.getElementById('merge-requests-status').textContent = data.status?.mergeRequests || 'completed';
+            
+            if (data.mergeRequests && data.mergeRequests.length > 0) {
+                const mergeRequestsList = document.getElementById('merge-requests-list');
+                mergeRequestsList.innerHTML = data.mergeRequests.map(mr => `
+                    <div class="merge-request-card">
+                        <h4>${mr.title}</h4>
+                        <p>Status: ${mr.state}</p>
+                    </div>
+                `).join('');
+            } else {
+                document.getElementById('merge-requests-list').innerHTML = 
+                    '<p>No merge requests found for similar issues</p>';
+            }
+
+            // Show and update suggestions section
+            const suggestionsSection = document.getElementById('suggestions-section');
+            suggestionsSection.style.display = 'block';
+            document.getElementById('suggestions-status').textContent = data.status?.suggestions || 'pending';
+            
+            if (data.suggestions && data.suggestions.length > 0) {
+                const suggestionsList = document.getElementById('file-suggestions-list');
+                suggestionsList.innerHTML = data.suggestions.map(suggestion => `
+                    <div class="suggestion-card">
+                        <h4>${suggestion.type} Changes</h4>
+                        <p>${suggestion.suggestion}</p>
+                        <div class="changes-list">
+                            <h5>Files to Consider:</h5>
                             <ul>
-                                {{#each this.files}}
-                                    <li>{{this}}</li>
-                                {{/each}}
+                                ${suggestion.files ? suggestion.files.map(file => `<li>${file}</li>`).join('') : ''}
                             </ul>
-                        </div>
-                        <div class="patterns-section">
-                            <h5>Common Patterns Found:</h5>
+                            <h5>Common Patterns:</h5>
                             <ul>
-                                {{#each this.commonPatterns}}
-                                    <li>{{this}}</li>
-                                {{/each}}
+                                ${suggestion.commonPatterns ? suggestion.commonPatterns.map(pattern => `<li>${pattern}</li>`).join('') : ''}
                             </ul>
                         </div>
                     </div>
-                {{/each}}
-            </div>
-        {{/if}}
-    {{/each}}
-</div>
-<div class="rate-limit-info" style="position: fixed; top: 10px; right: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
-    <strong>API Calls:</strong>
-    <span id="remaining-calls">N/A</span> / <span id="limit-calls">N/A</span>
-    <br>
-    <small>Resets at: <span id="reset-time">N/A</span></small>
-</div>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const rateLimit = {{{jsonStringify rateLimit}}} || {
-            remaining: 'N/A',
-            limit: 'N/A', 
-            resetTime: 'N/A'
-        };
-        
-        document.getElementById('remaining-calls').textContent = rateLimit.remaining;
-        document.getElementById('limit-calls').textContent = rateLimit.limit;
-        document.getElementById('reset-time').textContent = rateLimit.resetTime;
-    });
-</script>
+                `).join('');
+                document.getElementById('suggestions-status').textContent = 'completed';
+            } else {
+                document.getElementById('file-suggestions-list').innerHTML = 
+                    '<p>No actionable suggestions found from similar issues</p>';
+                document.getElementById('suggestions-status').textContent = 'completed';
+            }
+        }
+    </script>
+</body>
+</html>
