@@ -176,3 +176,158 @@
 {"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:40:49.699Z","username":"kjohnson"}
 {"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"N/A","remaining":"N/A","resetTime":"N/A"},"timestamp":"2024-11-20T19:40:50.072Z"}
 {"groupId":8,"level":"info","message":"Starting similar issues search","sourceIssue":{"id":"4453","title":"Client Grid"},"timestamp":"2024-11-20T19:40:51.753Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:44:29.678Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:44:29.683Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:44:38.115Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:44:38.119Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:44:47.585Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"N/A","remaining":"N/A","resetTime":"N/A"},"timestamp":"2024-11-20T19:44:48.167Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:45:52.862Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:45:52.868Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:46:00.502Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:46:00.505Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:46:10.831Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"N/A","remaining":"N/A","resetTime":"N/A"},"timestamp":"2024-11-20T19:46:11.408Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:48:30.784Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:48:30.789Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:48:40.639Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"N/A","remaining":"N/A","resetTime":"N/A"},"timestamp":"2024-11-20T19:48:41.100Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:49:32.299Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:49:32.303Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:49:38.943Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:49:38.947Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:50:34.422Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:50:34.426Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:52:07.894Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:52:07.904Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:52:34.255Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:52:34.259Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:52:59.153Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:52:59.158Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:54:03.281Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:54:03.285Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:54:09.376Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:54:09.380Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:54:18.355Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:54:18.361Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:54:21.532Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:54:21.537Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:54:31.308Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T19:54:31.939Z"}
+{"groupId":8,"level":"info","message":"Starting similar issues search","sourceIssue":{"id":"4453"},"timestamp":"2024-11-20T19:54:38.425Z"}
+{"error":"Cannot read properties of undefined (reading 'toLowerCase')","level":"error","message":"Error in getSimilarClosedIssues","sourceIssue":{"id":"4453"},"timestamp":"2024-11-20T19:54:38.426Z"}
+{"level":"error","message":"Error analyzing issue: Cannot read properties of undefined (reading 'toLowerCase')","stack":"TypeError: Cannot read properties of undefined (reading 'toLowerCase')\n    at preprocessTitle (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:98:29)\n    at getSimilarClosedIssues (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:153:25)\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:562:37\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:280:10)","timestamp":"2024-11-20T19:54:38.427Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:56:55.187Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:56:55.192Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:57:04.062Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T19:57:04.607Z"}
+{"groupId":8,"level":"info","message":"Starting similar issues search","sourceIssue":{"id":"4453"},"timestamp":"2024-11-20T19:57:06.605Z"}
+{"error":"Cannot read properties of undefined (reading 'toLowerCase')","level":"error","message":"Error in getSimilarClosedIssues","sourceIssue":{"id":"4453"},"timestamp":"2024-11-20T19:57:06.606Z"}
+{"level":"error","message":"Error analyzing issue: Cannot read properties of undefined (reading 'toLowerCase')","stack":"TypeError: Cannot read properties of undefined (reading 'toLowerCase')\n    at preprocessTitle (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:98:29)\n    at getSimilarClosedIssues (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:153:25)\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:562:37\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:280:10)","timestamp":"2024-11-20T19:57:06.608Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:57:48.133Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:57:48.139Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:57:55.252Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:57:55.257Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T19:58:03.545Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T19:58:03.549Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:58:10.744Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T19:58:11.489Z"}
+{"hasTitle":false,"issueId":"4453","level":"info","message":"Received analyze-issue request","timestamp":"2024-11-20T19:58:12.842Z"}
+{"level":"warn","message":"Missing issue title in request","timestamp":"2024-11-20T19:58:12.843Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T19:59:12.015Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T19:59:12.618Z"}
+{"hasTitle":true,"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Received analyze-issue request","timestamp":"2024-11-20T19:59:13.913Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T19:59:13.914Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:02:03.675Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:02:03.679Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:02:07.235Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:02:07.748Z"}
+{"hasTitle":true,"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Received analyze-issue request","timestamp":"2024-11-20T20:02:09.057Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:02:09.059Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:03:23.937Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:03:23.941Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:03:45.786Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:03:46.396Z"}
+{"hasTitle":true,"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Received analyze-issue request","timestamp":"2024-11-20T20:03:47.678Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:03:47.679Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:03:49.053Z"}
+{"error":"calculateSimilarity is not defined","level":"error","message":"Error in getSimilarClosedIssues","stack":"ReferenceError: calculateSimilarity is not defined\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:188:32\n    at Array.map (<anonymous>)\n    at getSimilarClosedIssues (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:187:44)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:611:31","timestamp":"2024-11-20T20:03:49.054Z"}
+{"error":"calculateSimilarity is not defined","issueId":"4453","issueTitle":"Client Grid","level":"error","message":"Error analyzing issue:","stack":"ReferenceError: calculateSimilarity is not defined\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:188:32\n    at Array.map (<anonymous>)\n    at getSimilarClosedIssues (file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:187:44)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:611:31","timestamp":"2024-11-20T20:03:49.054Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:04:29.315Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:04:29.320Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:04:36.041Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:04:37.181Z"}
+{"hasTitle":true,"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Received analyze-issue request","timestamp":"2024-11-20T20:04:38.600Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:04:38.601Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:04:40.483Z"}
+{"bottomScore":"0%","level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:04:40.510Z","topScore":"69%","totalIssues":100}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:07:16.027Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:07:16.037Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:07:22.924Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:07:22.928Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:07:32.834Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:07:33.365Z"}
+{"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Starting issue analysis","threshold":0.4,"timestamp":"2024-11-20T20:07:34.772Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:07:34.773Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:07:36.170Z"}
+{"bottomScore":"0%","level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:07:36.194Z","topScore":"69%","totalIssues":100}
+{"filteredIssues":4,"level":"info","message":"Filtered issues by threshold","threshold":"40%","timestamp":"2024-11-20T20:07:36.195Z","totalIssues":100}
+{"count":4,"level":"info","message":"Found similar issues","timestamp":"2024-11-20T20:07:36.196Z"}
+{"level":"info","message":"Fetching merge requests for similar issues","timestamp":"2024-11-20T20:07:36.196Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:08:28.826Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:08:29.443Z"}
+{"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Starting issue analysis","threshold":0.4,"timestamp":"2024-11-20T20:08:30.727Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:08:30.727Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:08:32.206Z"}
+{"bottomScore":"0%","level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:08:32.222Z","topScore":"69%","totalIssues":100}
+{"filteredIssues":4,"level":"info","message":"Filtered issues by threshold","threshold":"40%","timestamp":"2024-11-20T20:08:32.222Z","totalIssues":100}
+{"count":4,"level":"info","message":"Found similar issues","timestamp":"2024-11-20T20:08:32.222Z"}
+{"level":"info","message":"Fetching merge requests for similar issues","timestamp":"2024-11-20T20:08:32.223Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:09:27.633Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:09:27.642Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:09:51.889Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:09:52.522Z"}
+{"issueId":"4452","issueTitle":"z78711 - APS web reporting","level":"info","message":"Starting issue analysis","threshold":0.4,"timestamp":"2024-11-20T20:09:53.909Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4452\",\"title\":\"z78711 - APS web reporting\"}","timestamp":"2024-11-20T20:09:53.910Z"}
+{"level":"info","message":"Found 0 potential similar issues","timestamp":"2024-11-20T20:09:54.330Z"}
+{"level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:09:54.331Z","totalIssues":0}
+{"filteredIssues":0,"level":"info","message":"Filtered issues by threshold","threshold":"40%","timestamp":"2024-11-20T20:09:54.331Z","totalIssues":0}
+{"count":0,"level":"info","message":"Found similar issues","timestamp":"2024-11-20T20:09:54.332Z"}
+{"level":"info","message":"Fetched merge requests","timestamp":"2024-11-20T20:09:54.332Z","totalCount":0}
+{"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Starting issue analysis","threshold":0.4,"timestamp":"2024-11-20T20:10:00.805Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:10:00.805Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:10:02.174Z"}
+{"bottomScore":"0%","level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:10:02.195Z","topScore":"69%","totalIssues":100}
+{"filteredIssues":4,"level":"info","message":"Filtered issues by threshold","threshold":"40%","timestamp":"2024-11-20T20:10:02.195Z","totalIssues":100}
+{"count":4,"level":"info","message":"Found similar issues","timestamp":"2024-11-20T20:10:02.195Z"}
+{"issueId":58,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:10:02.196Z"}
+{"issueId":15,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:10:02.198Z"}
+{"issueId":28,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:10:02.200Z"}
+{"issueId":125,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:10:02.207Z"}
+{"count":2,"issueId":125,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:10:03.273Z"}
+{"count":15,"issueId":58,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:10:03.275Z"}
+{"count":28,"issueId":28,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:10:03.975Z"}
+{"count":100,"issueId":15,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:10:04.636Z"}
+{"level":"info","message":"Fetched merge requests","timestamp":"2024-11-20T20:10:04.637Z","totalCount":145}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:11:37.654Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:11:37.658Z"}
+{"level":"info","message":"Fetching issues for user","timestamp":"2024-11-20T20:11:54.107Z","username":"kjohnson"}
+{"count":10,"level":"info","message":"Successfully fetched issues","rateLimit":{"limit":"10 total","remaining":"100 per request"},"timestamp":"2024-11-20T20:11:54.678Z"}
+{"issueId":"4453","issueTitle":"Client Grid","level":"info","message":"Starting issue analysis","threshold":0.4,"timestamp":"2024-11-20T20:11:56.043Z"}
+{"groupId":8,"hasTitle":true,"level":"info","message":"Starting similar issues search","sourceIssue":"{\"id\":\"4453\",\"title\":\"Client Grid\"}","timestamp":"2024-11-20T20:11:56.044Z"}
+{"level":"info","message":"Found 100 potential similar issues","timestamp":"2024-11-20T20:11:57.339Z"}
+{"bottomScore":"0%","level":"info","message":"Completed similarity calculations","timestamp":"2024-11-20T20:11:57.363Z","topScore":"69%","totalIssues":100}
+{"filteredIssues":4,"level":"info","message":"Filtered issues by threshold","threshold":"40%","timestamp":"2024-11-20T20:11:57.364Z","totalIssues":100}
+{"count":4,"level":"info","message":"Found similar issues","timestamp":"2024-11-20T20:11:57.374Z"}
+{"issueId":58,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:11:57.375Z"}
+{"issueId":15,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:11:57.376Z"}
+{"issueId":28,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:11:57.378Z"}
+{"issueId":125,"level":"info","message":"Fetching merge requests for issue","timestamp":"2024-11-20T20:11:57.385Z"}
+{"count":2,"issueId":125,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:11:58.474Z"}
+{"count":15,"issueId":58,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:11:58.476Z"}
+{"count":28,"issueId":28,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:11:59.482Z"}
+{"count":100,"issueId":15,"level":"info","message":"Found merge requests","timestamp":"2024-11-20T20:11:59.834Z"}
+{"level":"info","message":"Fetched merge requests","timestamp":"2024-11-20T20:11:59.834Z","totalCount":145}
+{"level":"info","mergeRequestCount":145,"message":"Starting merge request analysis","timestamp":"2024-11-20T20:11:59.835Z"}
+{"level":"info","message":"Retrieved changes","timestamp":"2024-11-20T20:12:19.467Z","totalChanges":622}
+{"level":"info","message":"Analysis complete","suggestionsCount":1,"timestamp":"2024-11-20T20:12:19.470Z"}
