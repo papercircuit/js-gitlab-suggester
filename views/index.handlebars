@@ -197,38 +197,7 @@
     <script>
         document.getElementById('issueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('username').value;
-            try {
-                const response = await fetch('/fetch-user-issues', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username })
-                });
-                const data = await response.json();
-                
-                if (data.error) {
-                    document.querySelector('.error').textContent = data.error;
-                    return;
-                }
-
-                document.getElementById('rateLimit').textContent = data.rateLimit.limit;
-                document.getElementById('rateLimitRemaining').textContent = data.rateLimit.remaining;
-                document.getElementById('rateLimitReset').textContent = data.rateLimit.resetTime;
-
-                const select = document.getElementById('issues');
-                select.innerHTML = '<option value="">Select an issue</option>';
-                data.issues.forEach(issue => {
-                    const option = document.createElement('option');
-                    option.value = issue.id;
-                    const issueRef = `#${issue.iid}`;
-                    const zendeskRef = issue.references?.zd ? ` (Z#${issue.references.zd})` : '';
-                    option.textContent = `${issueRef} - ${issue.title}${zendeskRef}`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error:', error);
-                document.querySelector('.error').textContent = error.message;
-            }
+            await fetchUserIssues();
         });
 
         document.getElementById('issues').addEventListener('change', function() {
@@ -462,6 +431,56 @@
             // Look for "Closes #123" pattern at the start of the description
             const match = description.trim().match(/^Closes #(\d+)/i);
             return match ? match[1] : null;
+        }
+
+        async function fetchUserIssues() {
+            try {
+                const username = document.getElementById('username').value;
+                const currentSelectedIssue = document.getElementById('issues').value;
+                const currentSelectedOption = document.getElementById('issues').querySelector(`option[value="${currentSelectedIssue}"]`);
+                const currentSelectedTitle = currentSelectedOption ? currentSelectedOption.textContent : '';
+                
+                const response = await fetch('/fetch-user-issues', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch issues');
+                }
+
+                const data = await response.json();
+                
+                // Update rate limit display
+                document.getElementById('rateLimit').textContent = data.rateLimit.limit;
+                document.getElementById('rateLimitRemaining').textContent = data.rateLimit.remaining;
+                document.getElementById('rateLimitReset').textContent = data.rateLimit.resetTime;
+
+                const select = document.getElementById('issues');
+                select.innerHTML = '<option value="">Select an issue</option>';
+                data.issues.forEach(issue => {
+                    const option = document.createElement('option');
+                    option.value = issue.id;
+                    const issueRef = `#${issue.iid}`;
+                    const zendeskRef = issue.references?.zd ? ` (Z#${issue.references.zd})` : '';
+                    option.textContent = `${issueRef} - ${issue.title}${zendeskRef}`;
+                    
+                    // Restore previous selection if it exists
+                    if (issue.id.toString() === currentSelectedIssue) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+
+                // If we had a previous selection, trigger the analysis
+                if (currentSelectedIssue && currentSelectedTitle) {
+                    analyzeSimilarIssues(currentSelectedIssue, currentSelectedTitle);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.error').textContent = error.message;
+            }
         }
     </script>
 </body>
