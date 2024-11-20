@@ -11,6 +11,38 @@
         .error { color: red; }
         .details { margin-top: 20px; }
         pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; }
+        .suggestions {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .suggestion-section {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #0366d6;
+            background: white;
+        }
+        .suggestion-type {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f1f8ff;
+            border-radius: 4px;
+        }
+        .files-section, .patterns-section {
+            margin: 10px 0;
+        }
+        .files-section ul, .patterns-section ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        .files-section li, .patterns-section li {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e1e4e8;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +110,37 @@
             {{/each}}
         </ul>
     {{/if}}
+</div>
+<div class="suggestions">
+    {{#each similarIssues}}
+        {{#if this.suggestions.length}}
+            <div class="suggestion-section">
+                <h3>Suggestions for Similar Issue: {{this.title}}</h3>
+                {{#each this.suggestions}}
+                    <div class="suggestion-type">
+                        <h4>{{this.type}} Changes</h4>
+                        <p>{{this.suggestion}}</p>
+                        <div class="files-section">
+                            <h5>Files to Update:</h5>
+                            <ul>
+                                {{#each this.files}}
+                                    <li>{{this}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                        <div class="patterns-section">
+                            <h5>Common Patterns Found:</h5>
+                            <ul>
+                                {{#each this.commonPatterns}}
+                                    <li>{{this}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    </div>
+                {{/each}}
+            </div>
+        {{/if}}
+    {{/each}}
 </div>
 <div class="rate-limit-info" style="position: fixed; top: 10px; right: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
     <strong>API Calls:</strong>

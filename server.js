@@ -208,6 +208,9 @@ async function getMergeRequestsForIssue(issueId) {
         });
         return response.data;
     } catch (error) {
+        if (error.response && error.response.status === 404) {
+            return []; // Return empty array if no merge requests found
+        }
         console.error('Error fetching merge requests for issue:', error);
         throw new Error('Failed to fetch merge requests. Please try again later.');
     }
@@ -317,64 +320,70 @@ app.post('/fetch-similar-closed-issues', async (req, res) => {
     
     if (!issueId || !issueTitle) {
         logger.error('Missing required parameters', { issueId, issueTitle });
-        return res.status(400).json({
-            error: 'Missing required issue information'
+        return res.render('index', { 
+            error: 'Missing required issue information',
+            issues: req.body.issues || [],
+            userId: req.body.userId
         });
     }
 
     try {
         const similarIssues = await getSimilarClosedIssues({ id: issueId, title: issueTitle }, GROUP_ID);
         
-        // Fetch merge requests for each similar issue
-        const issuesWithMRs = await Promise.all(
+        // Fetch and analyze merge requests for each similar issue
+        const analyzedIssues = await Promise.all(
             similarIssues.map(async (issue) => {
                 try {
                     const mergeRequests = await getMergeRequestsForIssue(issue.id);
                     const mrDetails = await Promise.all(
                         mergeRequests.map(async (mr) => {
                             try {
-                                const details = await getMergeRequestDetails(mr.iid);
-                                return {
-                                    id: mr.id,
-                                    title: mr.title,
-                                    description: mr.description,
-                                    changes: details.changes || [],
-                                    webUrl: mr.web_url
-                                };
+                                return await getMergeRequestDetails(mr.iid);
                             } catch (mrError) {
                                 logger.warn(`Error fetching MR details for ${mr.iid}`, mrError);
-                                return {
-                                    id: mr.id,
-                                    title: mr.title,
-                                    description: mr.description,
-                                    changes: [],
-                                    webUrl: mr.web_url
-                                };
+                                return null;
                             }
                         })
                     );
+                    
+                    const validMRs = mrDetails.filter(mr => mr !== null);
+                    const suggestions = await analyzeMergeRequestChanges(validMRs);
+                    
                     return {
                         ...issue,
-                        mergeRequests: mrDetails
+                        suggestions,
+                        mergeRequests: validMRs
                     };
                 } catch (error) {
-                    logger.warn(`Error fetching MRs for issue ${issue.id}`, error);
+                    logger.warn(`Error analyzing MRs for issue ${issue.id}`, error);
                     return {
                         ...issue,
+                        suggestions: [],
                         mergeRequests: []
                     };
                 }
             })
         );
 
-        res.json(issuesWithMRs);
+        // Render the template with the results
+        res.render('index', {
+            userId: req.body.userId,
+            issues: req.body.issues,
+            similarIssues: analyzedIssues,
+            selectedIssueId: issueId,
+            error: ''
+        });
     } catch (error) {
         logger.error('Error finding similar issues', {
             error: error.message,
             issueId,
             issueTitle
         });
-        res.status(500).json({ error: error.message });
+        res.render('index', {
+            error: error.message,
+            issues: req.body.issues || [],
+            userId: req.body.userId
+        });
     }
 });
 
@@ -487,4 +496,67 @@ async function getRateLimitInfo(response) {
         resetTime: response.headers['x-ratelimit-reset'] ? 
             new Date(parseInt(response.headers['x-ratelimit-reset']) * 1000).toLocaleTimeString() : 'N/A'
     };
+}
+
+async function analyzeMergeRequestChanges(mergeRequests) {
+    // Aggregate all code changes
+    const allChanges = mergeRequests.flatMap(mr => mr.changes || []);
+    
+    // Group changes by file type/path
+    const changesByType = allChanges.reduce((acc, change) => {
+        const fileType = change.new_path.split('.').pop();
+        if (!acc[fileType]) {
+            acc[fileType] = [];
+        }
+        acc[fileType].push(change);
+        return acc;
+    }, {});
+
+    // Analyze patterns in changes
+    const suggestions = [];
+    
+    // Look for SQL changes
+    if (changesByType.sql) {
+        const sqlChanges = changesByType.sql;
+        suggestions.push({
+            type: 'SQL',
+            files: sqlChanges.map(c => c.new_path),
+            commonPatterns: analyzeCommonPatterns(sqlChanges),
+            suggestion: 'Consider updating these SQL files:'
+        });
+    }
+
+    // Look for JSP changes
+    if (changesByType.jsp) {
+        const jspChanges = changesByType.jsp;
+        suggestions.push({
+            type: 'JSP',
+            files: jspChanges.map(c => c.new_path),
+            commonPatterns: analyzeCommonPatterns(jspChanges),
+            suggestion: 'Review these JSP templates:'
+        });
+    }
+
+    return suggestions;
+}
+
+function analyzeCommonPatterns(changes) {
+    const patterns = [];
+    
+    changes.forEach(change => {
+        const diff = change.diff;
+        
+        // Look for common patterns in the diffs
+        if (diff.includes('sp_SetQueryColumn')) {
+            patterns.push('Column modifications detected');
+        }
+        if (diff.includes('sp_SetView')) {
+            patterns.push('View modifications detected');
+        }
+        if (diff.includes('sp_SetViewset')) {
+            patterns.push('Viewset modifications detected');
+        }
+    });
+    
+    return [...new Set(patterns)]; // Remove duplicates
 }
