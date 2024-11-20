@@ -40,6 +40,44 @@
             margin: 0;
             white-space: pre-wrap;
         }
+
+        .suggestions-wrapper {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .suggestion-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #0366d6;
+        }
+
+        .files-section, .patterns-section {
+            margin: 10px 0;
+        }
+
+        .files-section ul, .patterns-section ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        .files-section li, .patterns-section li {
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: #fff;
+            border-radius: 4px;
+            border: 1px solid #e1e4e8;
+        }
+
+        .suggestion-section h4 {
+            color: #0366d6;
+            margin: 0 0 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -62,6 +100,8 @@
     <select id="mergeRequests">
         <option value="">Select a merge request</option>
     </select>
+
+    <div id="suggestions"></div>
 
     <script>
         function updateRateLimitDisplay(rateLimit) {
@@ -102,6 +142,40 @@
             }
         }
 
+        async function displaySuggestions(suggestions) {
+            const container = document.getElementById('suggestions');
+            if (!container) {
+                // Create suggestions container if it doesn't exist
+                const newContainer = document.createElement('div');
+                newContainer.id = 'suggestions';
+                document.body.appendChild(newContainer);
+            }
+            
+            container.innerHTML = `
+                <div class="suggestions-wrapper">
+                    <h3>Suggested Changes Based on Similar Issues</h3>
+                    ${suggestions.map(suggestion => `
+                        <div class="suggestion-section">
+                            <h4>${suggestion.type} Changes</h4>
+                            <p>${suggestion.suggestion}</p>
+                            <div class="files-section">
+                                <h5>Files to Update:</h5>
+                                <ul>
+                                    ${suggestion.files.map(file => `<li>${file}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="patterns-section">
+                                <h5>Common Patterns Found:</h5>
+                                <ul>
+                                    ${suggestion.commonPatterns.map(pattern => `<li>${pattern}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
         async function fetchSimilarClosedIssues() {
             try {
                 const issueId = document.getElementById('issues').value;
@@ -119,14 +193,14 @@
                 const issueTitle = issueOption.textContent;
                 console.log('Fetching similar issues for:', { issueId, issueTitle });
                 
-                const response = await fetch('/similar-closed-issues', {
+                const response = await fetch('/fetch-similar-closed-issues', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
                         issueId, 
-                        title: issueTitle 
+                        issueTitle 
                     })
                 });
 
@@ -135,13 +209,14 @@
                     throw new Error(error.error || 'Failed to fetch similar issues');
                 }
 
-                const similarIssues = await response.json();
-                console.log('Received similar issues:', similarIssues);
+                const data = await response.json();
+                displaySuggestions(data.suggestions);
+                console.log('Received similar issues:', data.similarIssues);
 
                 const select = document.getElementById('similarIssues');
                 select.innerHTML = '<option value="">Select a closed issue</option>';
                 
-                similarIssues.forEach(issue => {
+                data.similarIssues.forEach(issue => {
                     const option = document.createElement('option');
                     option.value = issue.id;
                     const mrCount = issue.mergeRequests?.length || 0;
@@ -155,7 +230,7 @@
                     select.appendChild(option);
                 });
 
-                if (similarIssues.length === 0) {
+                if (data.similarIssues.length === 0) {
                     const option = document.createElement('option');
                     option.disabled = true;
                     option.textContent = 'No similar issues found';
