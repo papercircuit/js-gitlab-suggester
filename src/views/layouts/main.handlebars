@@ -1,0 +1,14 @@
+<div id="issueSelect" style="margin-top: 20px;">
+    <label for="issues">Select an Issue:</label>
+    <select id="issues" name="issueId">
+        <option value="">Select an issue</option>
+        {{#each issues}}
+            <option value="{{this.id}}" data-title="{{this.title}}">{{this.title}}</option>
+        {{/each}}
+    </select>
+    
+    <div style="margin-top: 10px;">
+        <label for="similarityThreshold">Minimum Similarity Threshold:</label>
+        <input type="number" id="similarityThreshold" min="0" max="100" value="40" style="width: 60px;">%
+    </div>
+</div>

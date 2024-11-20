@@ -1,0 +1,30 @@
+
+<div id="loading" class="loading">
+    <p>Analyzing similar issues and generating suggestions...</p>
+</div>
+
+<div id="suggestions-container"></div>
+
+<div id="analysis-progress" style="display: none;">
+    <h3>Analysis Progress</h3>
+    
+    <div id="similar-issues-section">
+        <h4>Step 1: Finding Similar Issues</h4>
+        <div class="progress-status">Status: <span id="similar-issues-status">Waiting...</span></div>
+        <div id="similar-issues-list"></div>
+    </div>
+
+    <div id="merge-requests-section" style="display: none;">
+        <h4>Step 2: Analyzing Merge Requests</h4>
+        <div class="progress-status">Status: <span id="merge-requests-status">Waiting...</span></div>
+        <div id="merge-requests-list"></div>
+    </div>
+
+    <div id="suggestions-section" style="display: none;">
+        <h4>Step 3: Generating Suggestions</h4>
+        <div class="progress-status">Status: <span id="suggestions-status">Waiting...</span></div>
+        <div id="file-suggestions-list"></div>
+    </div>
+
+    <div id="error-message" class="error-message"></div>
+</div>

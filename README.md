@@ -1,13 +1,22 @@
-js-gitlab-suggester/
-├── node_modules/
-├── views/
-│   ├── layouts/
-│   │   └── main.handlebars
-│   └── index.handlebars
-├── .env
-├── kill-port.sh
-├── package.json
-└── server.js
+src/
+├── config/
+│   └── config.js
+├── middleware/
+│   └── errorHandler.js
+├── routes/
+│   ├── index.js
+│   ├── issueRoutes.js
+│   ├── mergeRequestRoutes.js
+│   └── statusRoutes.js
+├── services/
+│   ├── gitlabService.js
+│   ├── issueService.js
+│   ├── mergeRequestService.js
+│   └── similarityService.js
+├── utils/
+│   ├── logger.js
+│   └── textProcessing.js
+└── app.js
 
 # GitLab Issue Helper
 

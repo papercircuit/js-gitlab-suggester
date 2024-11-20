@@ -331,3 +331,83 @@
 {"level":"info","mergeRequestCount":145,"message":"Starting merge request analysis","timestamp":"2024-11-20T20:11:59.835Z"}
 {"level":"info","message":"Retrieved changes","timestamp":"2024-11-20T20:12:19.467Z","totalChanges":622}
 {"level":"info","message":"Analysis complete","suggestionsCount":1,"timestamp":"2024-11-20T20:12:19.470Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:29:48.169Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:29:48.174Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:29:52.703Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:29:52.708Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:04.181Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:04.185Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:07.797Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:07.803Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:14.320Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:14.324Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:17.608Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:17.614Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:35.272Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:35.276Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:39.721Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:39.725Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:30:57.559Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:30:57.565Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:03.386Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:03.390Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:12.265Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:12.272Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:14.103Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:14.107Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:26.348Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:26.353Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:28.626Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:28.631Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:41.374Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:41.377Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:43.007Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:43.012Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:51.465Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:51.470Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:31:53.065Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:31:53.070Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:20.031Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:20.038Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:23.869Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:23.876Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:36.686Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:36.692Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:37.761Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:37.764Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:49.212Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:49.216Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:50.338Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:50.341Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:32:57.149Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:32:57.153Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:33:09.347Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:33:09.350Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:33:16.357Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:33:16.361Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:35:41.381Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:35:41.384Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:35:52.867Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:35:52.871Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:36:11.352Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:36:11.356Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:36:25.133Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:36:25.138Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:37:55.107Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:37:55.111Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:38:04.493Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:38:04.496Z"}
+{"error":"Failed to lookup view \"index\" in views directory \"./views\"","level":"error","message":"Unhandled error","method":"GET","path":"/","stack":"Error: Failed to lookup view \"index\" in views directory \"./views\"\n    at Function.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/application.js:597:17)\n    at ServerResponse.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/response.js:1049:7)\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:336:9\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:280:10)","timestamp":"2024-11-20T20:38:08.526Z"}
+{"level":"info","message":"Successfully authenticated with GitLab API","timestamp":"2024-11-20T20:39:34.485Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:39:34.489Z"}
+{"error":"Failed to lookup view \"index\" in views directory \"./views\"","level":"error","message":"Unhandled error","method":"GET","path":"/","stack":"Error: Failed to lookup view \"index\" in views directory \"./views\"\n    at Function.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/application.js:597:17)\n    at ServerResponse.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/response.js:1049:7)\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:336:9\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:280:10)","timestamp":"2024-11-20T20:39:40.836Z"}
+{"error":"Failed to lookup view \"index\" in views directory \"./views\"","level":"error","message":"Unhandled error","method":"GET","path":"/","stack":"Error: Failed to lookup view \"index\" in views directory \"./views\"\n    at Function.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/application.js:597:17)\n    at ServerResponse.render (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/response.js:1049:7)\n    at file:///Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/server.js:336:9\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:149:13)\n    at Route.dispatch (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/route.js:119:3)\n    at Layer.handle [as handle_request] (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/layer.js:95:5)\n    at /Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:284:15\n    at Function.process_params (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:346:12)\n    at next (/Users/kennyjohnson/Panoramic/projects/js-gitlab-suggester/node_modules/express/lib/router/index.js:280:10)","timestamp":"2024-11-20T20:39:42.482Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:39:48.918Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:41:20.775Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:41:30.584Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:41:45.320Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:42:17.579Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:42:20.818Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:42:22.526Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:42:31.872Z"}
+{"level":"info","message":"Server running on http://localhost:3000","timestamp":"2024-11-20T20:42:36.310Z"}

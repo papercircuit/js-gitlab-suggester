@@ -324,13 +324,6 @@ function calculateSimilarityScore(source, target, description = '', tags = []) {
     return titleScore + descScore + tagsScore;
 }
 
-function preprocessText(text) {
-    return text.toLowerCase()
-        .replace(/[^\w\s]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-}
-
 // Endpoint to display the main page
 app.get('/', (req, res) => {
     res.render('index', {
