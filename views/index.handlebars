@@ -1,0 +1,100 @@
+<!-- views/index.handlebars -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitLab Issue Helper</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        select, button { margin: 5px; }
+        .error { color: red; }
+        .details { margin-top: 20px; }
+        pre { background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>GitLab Issue Helper</h1>
+    <div class="error">{{error}}</div>
+    <!-- views/index.handlebars -->
+<form action="/fetch-user-issues" method="post">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" placeholder="Enter GitLab username" value="{{username}}">
+    <button type="submit">Fetch Issues</button>
+</form>
+<br>
+<form action="/fetch-similar-closed-issues" method="post">
+    <label for="issues">Select an Issue:</label>
+    <select id="issues" name="issueId" onchange="this.form.submit()">
+        <option value="">Select an issue</option>
+        {{#each issues}}
+            <option value="{{this.id}}" {{#if (eq ../selectedIssueId this.id)}}selected{{/if}}>{{this.title}}</option>
+        {{/each}}
+    </select>
+    <input type="hidden" name="userId" value="{{userId}}">
+    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
+    <input type="hidden" name="issueTitle" value='{{#if issues.length}}{{issues.0.title}}{{/if}}'>
+</form>
+<br>
+<form action="/fetch-merge-requests" method="post">
+    <label for="similarIssues">Similar Closed Issues:</label>
+    <select id="similarIssues" name="issueId" onchange="this.form.submit()">
+        <option value="">Select a closed issue</option>
+        {{#each similarIssues}}
+            <option value="{{this.id}}" {{#if (eq ../selectedSimilarIssueId this.id)}}selected{{/if}}>
+                ({{this.relevanceScore}}%) {{this.title}}
+            </option>
+        {{/each}}
+    </select>
+    <input type="hidden" name="userId" value="{{userId}}">
+    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
+    <input type="hidden" name="similarIssues" value='{{jsonStringify similarIssues}}'>
+</form>
+<br>
+<form action="/fetch-merge-request-details" method="post">
+    <label for="mergeRequests">Merge Requests:</label>
+    <select id="mergeRequests" name="mergeRequestId" onchange="this.form.submit()">
+        <option value="">Select a merge request</option>
+        {{#each mergeRequests}}
+            <option value="{{this.id}}" {{#if (eq ../selectedMergeRequestId this.id)}}selected{{/if}}>{{this.iid}} - {{this.title}}</option>
+        {{/each}}
+    </select>
+    <input type="hidden" name="userId" value="{{userId}}">
+    <input type="hidden" name="issues" value='{{jsonStringify issues}}'>
+    <input type="hidden" name="similarIssues" value='{{jsonStringify similarIssues}}'>
+    <input type="hidden" name="mergeRequests" value='{{jsonStringify mergeRequests}}'>
+</form>
+<div class="details">
+    {{#if mergeRequestDetails}}
+        <h2>Merge Request Details</h2>
+        <p><strong>ID:</strong> {{mergeRequestDetails.iid}}</p>
+        <p><strong>Title:</strong> {{mergeRequestDetails.title}}</p>
+        <p><strong>Description:</strong> {{mergeRequestDetails.description}}</p>
+        <h3>Changes</h3>
+        <ul>
+            {{#each mergeRequestDetails.diffs.diffs}}
+                <li><strong>File:</strong> {{this.new_path}}</li>
+                <li><strong>Changes:</strong> <pre>{{this.diff}}</pre></li>
+            {{/each}}
+        </ul>
+    {{/if}}
+</div>
+<div class="rate-limit-info" style="position: fixed; top: 10px; right: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
+    <strong>API Calls:</strong>
+    <span id="remaining-calls">N/A</span> / <span id="limit-calls">N/A</span>
+    <br>
+    <small>Resets at: <span id="reset-time">N/A</span></small>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rateLimit = {{{jsonStringify rateLimit}}} || {
+            remaining: 'N/A',
+            limit: 'N/A', 
+            resetTime: 'N/A'
+        };
+        
+        document.getElementById('remaining-calls').textContent = rateLimit.remaining;
+        document.getElementById('limit-calls').textContent = rateLimit.limit;
+        document.getElementById('reset-time').textContent = rateLimit.resetTime;
+    });
+</script>
