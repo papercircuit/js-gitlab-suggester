@@ -86,6 +86,51 @@
             font-weight: bold;
             color: #28a745;
         }
+
+        .clickable-card {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .clickable-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .merge-request-card {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+
+        .merge-request-card h4 {
+            margin: 0 0 10px 0;
+            color: #0366d6;
+        }
+
+        .issue-number {
+            color: #0366d6;
+            font-weight: bold;
+        }
+
+        .zendesk-number {
+            color: #6f42c1;
+            font-weight: bold;
+        }
+
+        .merge-request-number {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .project-name {
+            color: #6f42c1;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -175,7 +220,9 @@
                 data.issues.forEach(issue => {
                     const option = document.createElement('option');
                     option.value = issue.id;
-                    option.textContent = issue.title;
+                    const issueRef = `#${issue.iid}`;
+                    const zendeskRef = issue.references?.zd ? ` (Z#${issue.references.zd})` : '';
+                    option.textContent = `${issueRef} - ${issue.title}${zendeskRef}`;
                     select.appendChild(option);
                 });
             } catch (error) {
@@ -237,7 +284,35 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', fetchInitialRateLimit);
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchInitialRateLimit();
+            // Get the username from the input field
+            const username = document.getElementById('username').value;
+            try {
+                const response = await fetch('/fetch-user-issues', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username })
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.querySelector('.error').textContent = data.error;
+                    return;
+                }
+
+                // Update rate limit display
+                document.getElementById('rateLimit').textContent = data.rateLimit.limit;
+                document.getElementById('rateLimitRemaining').textContent = data.rateLimit.remaining;
+                document.getElementById('rateLimitReset').textContent = data.rateLimit.resetTime;
+
+                // Update issues dropdown
+                updateIssuesDropdown(data.issues);
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.error').textContent = error.message;
+            }
+        });
 
         async function analyzeSimilarIssues(issueId, issueTitle) {
             if (!issueId || !issueTitle) {
@@ -266,34 +341,23 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        issueId, 
+                        issueId,
                         issueTitle: issueTitle.trim(),
-                        threshold 
+                        threshold: document.getElementById('similarityThreshold').value / 100
                     })
                 });
                 clearTimeout(timeoutId);
 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Update status for each step
-                if (data.status) {
-                    updateStepStatus('similar-issues-status', data.status.similarIssues);
-                    updateStepStatus('merge-requests-status', data.status.mergeRequests);
-                    updateStepStatus('suggestions-status', data.status.suggestions);
-                }
-                
-                // Display results
                 displayResults(data);
-                
             } catch (error) {
                 console.error('Error analyzing issue:', error);
                 document.getElementById('error-message').textContent = error.message;
                 document.getElementById('error-message').style.display = 'block';
-                updateStepStatus('similar-issues-status', 'failed');
             }
         }
 
@@ -306,19 +370,28 @@
         }
 
         function displayResults(data) {
+            // Store similar issues data for reference
+            const similarIssues = data.similarIssues || [];
+            const similarIssueIds = similarIssues.map(issue => issue.iid);
+
             // Update similar issues section
             document.getElementById('similar-issues-status').textContent = data.status?.similarIssues || 'completed';
             const similarIssuesList = document.getElementById('similar-issues-list');
-            similarIssuesList.innerHTML = data.similarIssues.map(issue => `
-                <div class="issue-card">
-                    <h4>${issue.title}</h4>
-                    <p class="similarity-score">Similarity: ${issue.similarity}</p>
-                    <p class="issue-details">
-                        ID: ${issue.id}<br>
-                        State: ${issue.state}<br>
-                        Created: ${new Date(issue.created_at).toLocaleDateString()}
-                    </p>
-                </div>
+            similarIssuesList.innerHTML = similarIssues.map(issue => `
+                <a href="${issue.web_url}" target="_blank" class="clickable-card">
+                    <div class="issue-card">
+                        <h4>
+                            <span class="issue-number">#${issue.iid}</span> - ${issue.title}
+                            ${issue.references?.zd ? `<span class="zendesk-number">(Z#${issue.references.zd})</span>` : ''}
+                        </h4>
+                        <p class="similarity-score">Similarity: ${issue.similarity ? Math.round(issue.similarity * 100) : 0}%</p>
+                        <p class="issue-details">
+                           Project: <span class="project-name">${issue.web_url ? issue.web_url.split('/-/')[0].split('/').pop() : 'Unknown Project'}</span><br>
+                            State: ${issue.state}<br>
+                            Created: ${new Date(issue.created_at).toLocaleDateString()}
+                        </p>
+                    </div>
+                </a>
             `).join('');
 
             // Show and update merge requests section
@@ -328,12 +401,25 @@
             
             if (data.mergeRequests && data.mergeRequests.length > 0) {
                 const mergeRequestsList = document.getElementById('merge-requests-list');
-                mergeRequestsList.innerHTML = data.mergeRequests.map(mr => `
-                    <div class="merge-request-card">
-                        <h4>${mr.title}</h4>
-                        <p>Status: ${mr.state}</p>
-                    </div>
-                `).join('');
+                
+                mergeRequestsList.innerHTML = data.mergeRequests.map(mr => {
+                    return `
+                        <a href="${mr.web_url}" target="_blank" class="clickable-card">
+                            <div class="merge-request-card">
+                                <h4><span class="merge-request-number">!${mr.iid}</span> - ${mr.title}</h4>
+                                <p class="issue-details">
+                                    Project: ${mr.project?.name || mr.references?.full.split('!')[0] || 'Unknown Project'}<br>
+                                    Status: ${mr.state}<br>
+                                    Created: ${new Date(mr.created_at).toLocaleDateString()}<br>
+                                    Author: ${mr.author?.name || 'Unknown'}<br>
+                                    ${mr.description ? `
+                                        <strong>Closes Issue:</strong> <span class="issue-number">#${extractClosedIssueNumber(mr.description)}</span>
+                                    ` : ''}
+                                </p>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
             } else {
                 document.getElementById('merge-requests-list').innerHTML = 
                     '<p>No merge requests found for similar issues</p>';
@@ -368,6 +454,14 @@
                     '<p>No actionable suggestions found from similar issues</p>';
                 document.getElementById('suggestions-status').textContent = 'completed';
             }
+        }
+
+        function extractClosedIssueNumber(description) {
+            if (!description) return null;
+            
+            // Look for "Closes #123" pattern at the start of the description
+            const match = description.trim().match(/^Closes #(\d+)/i);
+            return match ? match[1] : null;
         }
     </script>
 </body>

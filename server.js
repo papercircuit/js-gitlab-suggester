@@ -152,7 +152,7 @@ function calculateRelevanceScore(sourceTitle, targetTitle) {
 }
 
 // Update the getSimilarClosedIssues function
-async function getSimilarClosedIssues(sourceIssue, groupId = 8) {
+async function getSimilarClosedIssues(sourceIssue, groupId = 8, threshold = 0.4) {
     try {
         logger.info('Starting similar issues search', { 
             sourceIssue: JSON.stringify(sourceIssue),
@@ -165,54 +165,87 @@ async function getSimilarClosedIssues(sourceIssue, groupId = 8) {
             return [];
         }
 
+        // Split the title into meaningful terms
         const searchTerms = preprocessTitle(sourceIssue.title);
-        logger.debug('Search terms generated:', { searchTerms });
+        
+        // Get issues using multiple search strategies
+        const responses = await Promise.all([
+            // Strategy 1: Exact title match
+            axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
+                headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
+                params: {
+                    scope: 'issues',
+                    search: `"${sourceIssue.title}"`, // Exact phrase
+                    state: 'closed',
+                    per_page: 100
+                }
+            }),
+            
+            // Strategy 2: Individual terms
+            axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
+                headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
+                params: {
+                    scope: 'issues',
+                    search: searchTerms.join(' '), // Space-separated terms
+                    state: 'closed',
+                    per_page: 100
+                }
+            }),
+            
+            // Strategy 3: Labels and key terms
+            axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/issues`, {
+                headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
+                params: {
+                    state: 'closed',
+                    labels: sourceIssue.labels?.join(','),
+                    search: searchTerms[0], // Most significant term
+                    per_page: 100
+                }
+            })
+        ]);
 
-        // Use the search API to find similar issues
-        const response = await axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
-            headers: {
-                'PRIVATE-TOKEN': GITLAB_TOKEN
-            },
-            params: {
-                scope: 'issues',
-                search: searchTerms.join(' '),
-                state: 'closed',
-                per_page: 100
-            }
-        });
+        // Combine and deduplicate results
+        const allIssues = responses.flatMap(r => r.data)
+            .filter((issue, index, self) => 
+                index === self.findIndex(i => i.id === issue.id)
+            );
 
-        logger.info(`Found ${response.data.length} potential similar issues`);
+        logger.info(`Found ${allIssues.length} potential similar issues`);
 
         // Calculate similarity scores
-        const scoredIssues = response.data.map(issue => {
+        const scoredIssues = allIssues.map(issue => {
             const similarity = calculateSimilarity(sourceIssue.title, issue.title);
+            
+            // Also consider label similarity if available
+            let labelSimilarity = 0;
+            if (sourceIssue.labels && issue.labels) {
+                const sourceLabels = new Set(sourceIssue.labels);
+                const targetLabels = new Set(issue.labels);
+                const intersection = new Set([...sourceLabels].filter(x => targetLabels.has(x)));
+                labelSimilarity = intersection.size / Math.max(sourceLabels.size, targetLabels.size);
+            }
+
+            // Combined similarity score (80% title, 20% labels)
+            const combinedSimilarity = (similarity * 0.8) + (labelSimilarity * 0.2);
+
             logger.debug('Calculated similarity score', {
                 sourceTitle: sourceIssue.title,
                 targetTitle: issue.title,
-                similarity: similarity
+                titleSimilarity: similarity,
+                labelSimilarity,
+                combinedSimilarity
             });
+
             return {
                 ...issue,
-                similarity: `${Math.round(similarity * 100)}%`
+                similarity: combinedSimilarity,
+                similarityDisplay: `${Math.round(combinedSimilarity * 100)}%`
             };
         });
 
-        // Sort by similarity score
-        scoredIssues.sort((a, b) => 
-            parseFloat(b.similarity) - parseFloat(a.similarity)
-        );
-
-        logger.info('Completed similarity calculations', {
-            totalIssues: scoredIssues.length,
-            topScore: scoredIssues[0]?.similarity,
-            bottomScore: scoredIssues[scoredIssues.length - 1]?.similarity
-        });
-
-        const threshold = 0.4; // Default 40%
-        const filteredIssues = scoredIssues.filter(issue => {
-            const similarityValue = parseFloat(issue.similarity) / 100;
-            return similarityValue >= threshold;
-        });
+        // Filter by threshold (lower threshold means MORE results, not fewer)
+        const filteredIssues = scoredIssues.filter(issue => issue.similarity >= threshold)
+            .sort((a, b) => b.similarity - a.similarity);
 
         logger.info('Filtered issues by threshold', {
             threshold: `${threshold * 100}%`,
@@ -230,50 +263,49 @@ async function getSimilarClosedIssues(sourceIssue, groupId = 8) {
     }
 }
 
-// Helper function to parse duration strings
-function parseDuration(duration) {
-    const units = {
-        days: 24 * 60 * 60 * 1000,
-        weeks: 7 * 24 * 60 * 60 * 1000,
-        months: 30 * 24 * 60 * 60 * 1000,
-        years: 365 * 24 * 60 * 60 * 1000
-    };
-    
-    const match = duration.match(/^(\d+)(days|weeks|months|years)$/);
-    if (!match) return 6 * units.months; // default to 6 months
-    
-    return parseInt(match[1]) * units[match[2]];
-}
-
 // Function to get merge requests that closed an issue
-async function getMergeRequestsForIssue(issueId) {
+async function getMergeRequestsForIssue(projectId, issueIid) {
+    if (!projectId || !issueIid) {
+        logger.error('Invalid parameters', { projectId, issueIid });
+        return []; // Return empty array instead of throwing error for better handling
+    }
+
     try {
-        logger.info('Fetching merge requests for issue', { issueId });
-        
-        const response = await axios.get(
-            `${GITLAB_URL}/api/v4/merge_requests`, {
+        const mergeRequestsResponse = await axios.get(
+            `${GITLAB_URL}/api/v4/projects/${projectId}/merge_requests`,
+            {
                 headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
                 params: {
-                    scope: 'all',
+                    search: `#${issueIid}`,
                     state: 'merged',
-                    search: `#${issueId}`,
-                    per_page: 100
+                    order_by: 'updated_at',
+                    sort: 'desc'
                 }
             }
         );
-
-        logger.info('Found merge requests', {
-            issueId,
-            count: response.data.length
+        
+        // Filter to ensure we only get MRs that actually reference this issue
+        const mergeRequests = mergeRequestsResponse.data.filter(mr => {
+            const description = (mr.description || '').toLowerCase();
+            const title = (mr.title || '').toLowerCase();
+            return description.includes(`#${issueIid}`) || 
+                   title.includes(`#${issueIid}`);
         });
 
-        return response.data;
+        logger.debug('Fetched merge requests', {
+            projectId,
+            issueIid,
+            count: mergeRequests.length
+        });
+
+        return mergeRequests;
     } catch (error) {
-        logger.error('Error fetching merge requests', {
-            issueId,
-            error: error.message
+        logger.error('Error fetching merge requests:', {
+            error: error.message,
+            projectId,
+            issueIid
         });
-        return [];
+        return []; // Return empty array on error
     }
 }
 
@@ -424,7 +456,10 @@ app.post('/fetch-similar-closed-issues', async (req, res) => {
         res.render('index', {
             userId: req.body.userId,
             issues: req.body.issues,
-            similarIssues: analyzedIssues,
+            similarIssues: analyzedIssues.map(issue => ({
+                ...issue,
+                similarity: issue.similarity
+            })),
             selectedIssueId: issueId,
             error: ''
         });
@@ -643,7 +678,8 @@ function analyzeCommonPatterns(changes) {
 
 // Add this new endpoint to server.js
 app.post('/analyze-issue', async (req, res) => {
-    const { issueId, issueTitle, threshold = 0.4 } = req.body;
+    const { issueId, issueTitle } = req.body;
+    const threshold = parseFloat(req.body.threshold || 0.4);
     
     logger.info('Starting issue analysis', {
         issueId,
@@ -652,11 +688,11 @@ app.post('/analyze-issue', async (req, res) => {
     });
 
     try {
-        // Step 1: Find similar closed issues
+        // Pass the threshold to getSimilarClosedIssues
         const similarIssues = await getSimilarClosedIssues({ 
             id: issueId, 
             title: issueTitle 
-        });
+        }, 8, threshold);
         
         logger.info('Found similar issues', {
             count: similarIssues.length
@@ -664,7 +700,7 @@ app.post('/analyze-issue', async (req, res) => {
 
         // Step 2: Get merge requests for each similar issue
         const mergeRequestPromises = similarIssues.map(issue => 
-            getMergeRequestsForIssue(issue.iid)
+            getMergeRequestsForIssue(issue.project_id, issue.iid)
         );
         
         const mergeRequests = (await Promise.all(mergeRequestPromises))
@@ -717,23 +753,20 @@ app.get('/initial-rate-limit', async (req, res) => {
 });
 
 function calculateSimilarity(sourceTitle, targetTitle) {
-    if (!sourceTitle || !targetTitle) {
-        logger.warn('Missing title in similarity calculation', {
-            sourceTitle,
-            targetTitle
-        });
-        return 0;
-    }
-
-    // Preprocess both titles
-    const sourceWords = preprocessTitle(sourceTitle);
-    const targetWords = preprocessTitle(targetTitle);
-
-    // Count matching words
-    const matchingWords = sourceWords.filter(word => 
-        targetWords.includes(word)
-    ).length;
-
+    if (!sourceTitle || !targetTitle) return 0;
+    
+    // Normalize strings and split into words
+    const sourceWords = sourceTitle.toLowerCase().split(/\s+/);
+    const targetWords = targetTitle.toLowerCase().split(/\s+/);
+    
+    // Calculate Jaccard similarity
+    const sourceSet = new Set(sourceWords);
+    const targetSet = new Set(targetWords);
+    const intersection = new Set([...sourceSet].filter(x => targetSet.has(x)));
+    const union = new Set([...sourceSet, ...targetSet]);
+    
+    const jaccardSimilarity = intersection.size / union.size;
+    
     // Calculate word order similarity
     let orderScore = 0;
     sourceWords.forEach((word, index) => {
@@ -742,18 +775,16 @@ function calculateSimilarity(sourceTitle, targetTitle) {
             orderScore += 1 / (1 + Math.abs(index - targetIndex));
         }
     });
+    const orderSimilarity = orderScore / Math.max(sourceWords.length, targetWords.length);
     
-    // Combine scores with weights
-    const matchScore = matchingWords / Math.max(sourceWords.length, targetWords.length);
-    const orderWeight = orderScore / sourceWords.length;
-    
-    const similarity = (matchScore * 0.7) + (orderWeight * 0.3);
+    // Combine scores with weights (70% Jaccard, 30% order)
+    const similarity = (jaccardSimilarity * 0.7) + (orderSimilarity * 0.3);
     
     logger.debug('Calculated similarity', {
         sourceTitle,
         targetTitle,
-        matchScore,
-        orderWeight,
+        jaccardSimilarity,
+        orderSimilarity,
         finalSimilarity: similarity
     });
 
