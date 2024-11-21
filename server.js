@@ -4,6 +4,10 @@ import express from 'express';
 import { create } from 'express-handlebars';
 import winston from 'winston';
 import stringSimilarity from 'string-similarity';
+import fs from 'fs/promises';
+import path from 'path';
+import natural from 'natural';
+import nlp from 'compromise';
 const app = express();
 const port = 3000;
 
@@ -56,6 +60,10 @@ const logger = winston.createLogger({
     })
   ]
 });
+
+// Initialize NLP tools
+const tokenizer = new natural.WordTokenizer();
+const TfIdf = natural.TfIdf;
 
 // Function to get issues assigned to a user
 async function getUserIssues(username) {
@@ -152,110 +160,150 @@ function calculateRelevanceScore(sourceTitle, targetTitle) {
 }
 
 // Update the getSimilarClosedIssues function
-async function getSimilarClosedIssues(sourceIssue, groupId = 8, threshold = 0.4) {
+async function getSimilarClosedIssues(sourceIssue, groupId = 8, threshold) {
     try {
-        logger.info('Starting similar issues search', { 
+        logger.info('Starting enhanced similar issues search', { 
             sourceIssue: JSON.stringify(sourceIssue),
-            groupId,
-            hasTitle: !!sourceIssue?.title
+            groupId
         });
 
         if (!sourceIssue?.title) {
-            logger.warn('Missing title in source issue', { sourceIssue });
+            logger.warn('Missing title in source issue');
             return [];
         }
 
-        // Split the title into meaningful terms
-        const searchTerms = preprocessTitle(sourceIssue.title);
-        
-        // Get issues using multiple search strategies
-        const responses = await Promise.all([
-            // Strategy 1: Exact title match
+        // Extract key concepts using compromise
+        const doc = nlp(sourceIssue.title + ' ' + (sourceIssue.description || ''));
+        const nouns = doc.nouns().out('array');
+        const verbs = doc.verbs().out('array');
+        const terms = [...new Set([...nouns, ...verbs])];
+
+        // Create search patterns for SQL-specific terms
+        const sqlAndJspPatterns = [
+            'view', 'grid', 'column', 'status', 'query', 'sp_Set', 
+            'stored procedure', 'update', 'exclude', 'filter',
+            // JSP specific patterns
+            'pano:field', 'pano:form', 'tiles:insert', 'html:submit',
+            'display_name', 'edit', 'select', 'insert', 'common'
+        ];
+
+        const hasSqlTerms = terms.some(term => 
+            sqlAndJspPatterns.some(pattern => term.toLowerCase().includes(pattern))
+        );
+
+        // Multiple search strategies
+        const searchTerms = sourceIssue.title.toLowerCase().split(' ');
+        const keyTerms = searchTerms.filter(term => 
+            sqlAndJspPatterns.some(pattern => term.includes(pattern.toLowerCase())) ||
+            term.length > 3  // Include meaningful words
+        );
+
+        // Add SQL/JSP specific terms if detected
+        if (sourceIssue.title.toLowerCase().includes('grid')) {
+            keyTerms.push('view', 'column', 'query');
+        }
+
+        const searchPromises = [
+            // Exact title match
             axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
                 headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
                 params: {
                     scope: 'issues',
-                    search: `"${sourceIssue.title}"`, // Exact phrase
+                    search: sourceIssue.title,
                     state: 'closed',
                     per_page: 100
                 }
             }),
             
-            // Strategy 2: Individual terms
+            // Key terms search with broader scope
             axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
                 headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
                 params: {
                     scope: 'issues',
-                    search: searchTerms.join(' '), // Space-separated terms
+                    search: keyTerms.slice(0, 3).join(' OR '), // Use first 3 key terms
                     state: 'closed',
                     per_page: 100
                 }
             }),
-            
-            // Strategy 3: Labels and key terms
-            axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/issues`, {
+
+            // SQL/JSP specific search
+            axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
                 headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
                 params: {
+                    scope: 'issues',
+                    search: 'sp_Set OR pano:field OR tiles:insert',
                     state: 'closed',
-                    labels: sourceIssue.labels?.join(','),
-                    search: searchTerms[0], // Most significant term
                     per_page: 100
                 }
             })
-        ]);
+        ];
 
-        // Combine and deduplicate results
+        // Add SQL-specific search if relevant
+        if (hasSqlTerms) {
+            searchPromises.push(
+                axios.get(`${GITLAB_URL}/api/v4/groups/${groupId}/search`, {
+                    headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
+                    params: {
+                        scope: 'issues',
+                        search: 'sp_SetView OR sp_SetQueryColumn OR sp_SetViewset',
+                        state: 'closed',
+                        per_page: 100
+                    }
+                })
+            );
+        }
+
+        const responses = await Promise.all(searchPromises);
         const allIssues = responses.flatMap(r => r.data)
             .filter((issue, index, self) => 
                 index === self.findIndex(i => i.id === issue.id)
             );
 
-        logger.info(`Found ${allIssues.length} potential similar issues`);
+        // Enhanced similarity calculation
+        const tfidf = new TfIdf();
+        tfidf.addDocument(sourceIssue.title + ' ' + (sourceIssue.description || ''));
 
-        // Calculate similarity scores
         const scoredIssues = allIssues.map(issue => {
-            const similarity = calculateSimilarity(sourceIssue.title, issue.title);
-            
-            // Also consider label similarity if available
-            let labelSimilarity = 0;
-            if (sourceIssue.labels && issue.labels) {
-                const sourceLabels = new Set(sourceIssue.labels);
-                const targetLabels = new Set(issue.labels);
-                const intersection = new Set([...sourceLabels].filter(x => targetLabels.has(x)));
-                labelSimilarity = intersection.size / Math.max(sourceLabels.size, targetLabels.size);
-            }
+            // Basic string similarity
+            const stringSim = stringSimilarity.compareTwoStrings(
+                sourceIssue.title.toLowerCase(),
+                issue.title.toLowerCase()
+            );
 
-            // Combined similarity score (80% title, 20% labels)
-            const combinedSimilarity = (similarity * 0.8) + (labelSimilarity * 0.2);
+            // Term overlap score
+            const issueTerms = issue.title.toLowerCase().split(' ');
+            const termOverlap = keyTerms.filter(term => 
+                issueTerms.some(t => t.includes(term))
+            ).length / keyTerms.length;
 
-            logger.debug('Calculated similarity score', {
-                sourceTitle: sourceIssue.title,
-                targetTitle: issue.title,
-                titleSimilarity: similarity,
-                labelSimilarity,
-                combinedSimilarity
-            });
+            // Pattern matching score
+            const patternScore = (issue.title + ' ' + (issue.description || '')).toLowerCase()
+                .split(' ')
+                .some(word => sqlAndJspPatterns.some(pattern => 
+                    word.includes(pattern.toLowerCase())
+                )) ? 0.3 : 0;
+
+            // View-specific scoring
+            const viewScore = issue.title.toLowerCase().includes('view') && 
+                (issue.description || '').toLowerCase().includes('sp_setview') ? 0.2 : 0;
+
+            // Adjust combined score weights
+            const combinedScore = (stringSim * 0.4) + (termOverlap * 0.3) + 
+                (patternScore * 0.2) + (viewScore * 0.1);
 
             return {
                 ...issue,
-                similarity: combinedSimilarity,
-                similarityDisplay: `${Math.round(combinedSimilarity * 100)}%`
+                similarity: combinedScore,
+                similarityDisplay: `${Math.round(combinedScore * 100)}%`
             };
         });
 
-        // Filter by threshold (lower threshold means MORE results, not fewer)
-        const filteredIssues = scoredIssues.filter(issue => issue.similarity >= threshold)
+        return scoredIssues
+            .filter(issue => issue.similarity >= threshold)
             .sort((a, b) => b.similarity - a.similarity);
 
-        logger.info('Filtered issues by threshold', {
-            threshold: `${threshold * 100}%`,
-            totalIssues: scoredIssues.length,
-            filteredIssues: filteredIssues.length
-        });
-
-        return filteredIssues;
     } catch (error) {
-        logger.error('Error in getSimilarClosedIssues', {
+        logger.error('Error in enhanced getSimilarClosedIssues', {
             error: error.message,
             stack: error.stack
         });
@@ -271,31 +319,52 @@ async function getMergeRequestsForIssue(projectId, issueIid) {
     }
 
     try {
+        logger.debug('Fetching merge requests', {
+            projectId,
+            issueIid,
+            url: `${GITLAB_URL}/api/v4/projects/${projectId}/merge_requests`
+        });
+
         const mergeRequestsResponse = await axios.get(
             `${GITLAB_URL}/api/v4/projects/${projectId}/merge_requests`,
             {
                 headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN },
                 params: {
-                    search: `#${issueIid}`,
+                    search: issueIid.toString(), // Remove the # symbol from search
                     state: 'merged',
                     order_by: 'updated_at',
-                    sort: 'desc'
+                    sort: 'desc',
+                    per_page: 100
                 }
             }
         );
-        
+
         // Filter to ensure we only get MRs that actually reference this issue
         const mergeRequests = mergeRequestsResponse.data.filter(mr => {
             const description = (mr.description || '').toLowerCase();
             const title = (mr.title || '').toLowerCase();
-            return description.includes(`#${issueIid}`) || 
-                   title.includes(`#${issueIid}`);
+            const issueRef = issueIid.toString();
+            
+            // Check for different formats of issue references
+            return description.includes(`#${issueRef}`) || 
+                   description.includes(`closes #${issueRef}`) ||
+                   description.includes(`closed #${issueRef}`) ||
+                   description.includes(`fixes #${issueRef}`) ||
+                   description.includes(`fixed #${issueRef}`) ||
+                   description.includes(`resolves #${issueRef}`) ||
+                   description.includes(`resolved #${issueRef}`) ||
+                   title.includes(`#${issueRef}`);
         });
 
         logger.debug('Fetched merge requests', {
             projectId,
             issueIid,
-            count: mergeRequests.length
+            count: mergeRequests.length,
+            mergeRequests: mergeRequests.map(mr => ({
+                id: mr.id,
+                iid: mr.iid,
+                title: mr.title
+            }))
         });
 
         return mergeRequests;
@@ -310,24 +379,33 @@ async function getMergeRequestsForIssue(projectId, issueIid) {
 }
 
 // Function to get merge request details
-async function getMergeRequestDetails(mergeRequestId) {
+async function getMergeRequestDetails(projectId, mergeRequestIid) {
     try {
-        const response = await axios.get(`${GITLAB_URL}/api/v4/merge_requests/${mergeRequestId}/changes`, {
-            headers: {
-                'PRIVATE-TOKEN': GITLAB_TOKEN
+        const response = await axios.get(
+            `${GITLAB_URL}/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}`,
+            {
+                headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN }
             }
-        });
-        
+        );
+
+        // Get the changes for this merge request
+        const changesResponse = await axios.get(
+            `${GITLAB_URL}/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/changes`,
+            {
+                headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN }
+            }
+        );
+
         return {
             ...response.data,
-            changes: response.data.changes.map(change => ({
-                oldPath: change.old_path,
-                newPath: change.new_path,
-                diff: change.diff
-            }))
+            changes: changesResponse.data.changes
         };
     } catch (error) {
-        logger.error('Error fetching merge request details:', error);
+        logger.error('Error fetching merge request details:', {
+            error: error.message,
+            projectId,
+            mergeRequestIid
+        });
         throw error;
     }
 }
@@ -417,74 +495,89 @@ app.post('/fetch-similar-closed-issues', async (req, res) => {
     try {
         const similarIssues = await getSimilarClosedIssues({ id: issueId, title: issueTitle }, GROUP_ID);
         
-        // Fetch and analyze merge requests for each similar issue
-        const analyzedIssues = await Promise.all(
+        // Fetch merge requests for each similar issue
+        const issuesWithMergeRequests = await Promise.all(
             similarIssues.map(async (issue) => {
-                try {
-                    const mergeRequests = await getMergeRequestsForIssue(issue.id);
-                    const mrDetails = await Promise.all(
-                        mergeRequests.map(async (mr) => {
-                            try {
-                                return await getMergeRequestDetails(mr.iid);
-                            } catch (mrError) {
-                                logger.warn(`Error fetching MR details for ${mr.iid}`, mrError);
-                                return null;
-                            }
-                        })
-                    );
-                    
-                    const validMRs = mrDetails.filter(mr => mr !== null);
-                    const suggestions = await analyzeMergeRequestChanges(validMRs);
-                    
-                    return {
-                        ...issue,
-                        suggestions,
-                        mergeRequests: validMRs
-                    };
-                } catch (error) {
-                    logger.warn(`Error analyzing MRs for issue ${issue.id}`, error);
-                    return {
-                        ...issue,
-                        suggestions: [],
-                        mergeRequests: []
-                    };
-                }
+                const mergeRequests = await getMergeRequestsForIssue(issue.project_id, issue.iid);
+                return {
+                    ...issue,
+                    mergeRequests
+                };
             })
         );
 
-        // Render the template with the results
-        res.render('index', {
-            userId: req.body.userId,
-            issues: req.body.issues,
-            similarIssues: analyzedIssues.map(issue => ({
-                ...issue,
-                similarity: issue.similarity
-            })),
-            selectedIssueId: issueId,
-            error: ''
+        logger.info('Found similar issues with merge requests', {
+            count: issuesWithMergeRequests.length,
+            issuesWithMRs: issuesWithMergeRequests.map(i => ({
+                id: i.id,
+                title: i.title,
+                mergeRequestCount: i.mergeRequests.length
+            }))
         });
+
+        res.json({
+            similarIssues: issuesWithMergeRequests,
+            status: {
+                similarIssues: 'completed',
+                mergeRequests: 'completed',
+                suggestions: issuesWithMergeRequests.some(i => i.mergeRequests.length > 0) ? 'completed' : 'pending'
+            }
+        });
+
     } catch (error) {
-        logger.error('Error finding similar issues', {
+        logger.error('Error finding similar issues:', {
             error: error.message,
             issueId,
             issueTitle
         });
-        res.render('index', {
+        res.status(500).json({
             error: error.message,
-            issues: req.body.issues || [],
-            userId: req.body.userId
+            similarIssues: [],
+            status: {
+                similarIssues: 'failed',
+                mergeRequests: 'failed',
+                suggestions: 'failed'
+            }
         });
     }
 });
 
 // Endpoint to get merge requests for an issue
 app.post('/fetch-merge-requests', async (req, res) => {
-    const issueId = req.body.issueId;
+    const { issueId, projectId, iid } = req.body;
     try {
-        const mergeRequests = await getMergeRequestsForIssue(issueId);
-        res.render('index', { userId: req.body.userId, issues: req.body.issues, similarIssues: req.body.similarIssues, mergeRequests, mergeRequestDetails: null, error: '' });
+        if (!projectId || !iid) {
+            throw new Error('Missing required project ID or issue IID');
+        }
+        
+        logger.info('Fetching merge requests', {
+            projectId,
+            issueIid: iid
+        });
+
+        const mergeRequests = await getMergeRequestsForIssue(projectId, iid);
+        res.render('index', { 
+            userId: req.body.userId, 
+            issues: req.body.issues, 
+            similarIssues: req.body.similarIssues, 
+            mergeRequests, 
+            mergeRequestDetails: null, 
+            error: '' 
+        });
     } catch (error) {
-        res.render('index', { userId: req.body.userId, issues: req.body.issues, similarIssues: req.body.similarIssues, mergeRequests: [], mergeRequestDetails: null, error: error.message });
+        logger.error('Error fetching merge requests:', {
+            error: error.message,
+            projectId,
+            issueIid: iid
+        });
+        res.render('index', { 
+            userId: req.body.userId, 
+            issues: req.body.issues, 
+            similarIssues: req.body.similarIssues, 
+            mergeRequests: [], 
+            mergeRequestDetails: null, 
+            error: error.message 
+        });
     }
 });
 
@@ -580,213 +673,155 @@ app.use((err, req, res, next) => {
 });
 
 async function getRateLimitInfo(response) {
-    // Using GitLab's x- prefixed headers
-    const total = response.headers['x-total'] || 'N/A';
-    const perPage = response.headers['x-per-page'] || 'N/A';
-
     return {
-        limit: `${total} total`,
-        remaining: `${perPage} per request`,
+        limit: response.headers['ratelimit-limit'] || response.headers['x-ratelimit-limit'] || 'N/A',
+        remaining: response.headers['ratelimit-remaining'] || response.headers['x-ratelimit-remaining'] || 'N/A',
+        resetTime: new Date(
+            (response.headers['ratelimit-reset'] || response.headers['x-ratelimit-reset'] || Date.now() / 1000) * 1000
+        ).toLocaleTimeString()
     };
 }
 
 async function analyzeMergeRequestChanges(mergeRequests) {
-    try {
-        logger.info('Starting merge request analysis', {
-            mergeRequestCount: mergeRequests.length
-        });
-
-        // Get changes for each merge request
-        const changes = await Promise.all(mergeRequests.map(async mr => {
-            try {
-                const response = await axios.get(
-                    `${GITLAB_URL}/api/v4/projects/${mr.project_id}/merge_requests/${mr.iid}/changes`,
-                    { headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN } }
-                );
-                return response.data.changes;
-            } catch (error) {
-                logger.error('Error fetching MR changes', {
-                    mrId: mr.iid,
-                    error: error.message
-                });
-                return [];
-            }
-        }));
-
-        const allChanges = changes.flat().filter(Boolean);
-        logger.info('Retrieved changes', { 
-            totalChanges: allChanges.length 
-        });
-
-        if (allChanges.length === 0) {
-            return [];
-        }
-
-        const changesByType = allChanges.reduce((acc, change) => {
-            const fileType = change.new_path.split('.').pop();
-            if (!acc[fileType]) acc[fileType] = [];
-            acc[fileType].push(change);
-            return acc;
-        }, {});
-
-        const suggestions = [];
+    const suggestions = [];
+    
+    for (const mr of mergeRequests) {
+        const changePatterns = await analyzeChangePatterns(mr);
         
-        if (changesByType.sql) {
-            const patterns = analyzeCommonPatterns(changesByType.sql);
-            suggestions.push({
-                type: 'SQL',
-                files: [...new Set(changesByType.sql.map(c => c.new_path))],
-                commonPatterns: patterns,
-                suggestion: 'Consider these SQL changes based on similar issues'
-            });
+        for (const pattern of changePatterns) {
+            const suggestion = await generateSuggestion(pattern, mr);
+            if (suggestion) {
+                suggestions.push(suggestion);
+            }
         }
+    }
+    
+    return suggestions;
+}
 
-        logger.info('Analysis complete', {
-            suggestionsCount: suggestions.length
-        });
+async function generateSuggestion(pattern, mergeRequest) {
+    const { type, changeType, patterns } = pattern;
+    
+    // Build context from the merge request
+    const context = {
+        title: mergeRequest.title,
+        description: mergeRequest.description,
+        changes: patterns,
+        relatedFiles: pattern.relatedFiles
+    };
 
-        return suggestions;
-    } catch (error) {
-        logger.error('Error in analyzeMergeRequestChanges', {
-            error: error.message,
-            stack: error.stack
-        });
-        throw error;
+    // Generate specific suggestions based on the type
+    switch (type) {
+        case 'SQL':
+            return generateSQLSuggestion(changeType, context);
+        case 'JSP':
+            return generateJSPSuggestion(changeType, context);
+        default:
+            return null;
     }
 }
 
-function analyzeCommonPatterns(changes) {
-    const patterns = [];
-    
-    changes.forEach(change => {
-        const diff = change.diff;
-        
-        // Look for common patterns in the diffs
-        if (diff.includes('sp_SetQueryColumn')) {
-            patterns.push('Column modifications detected');
-        }
-        if (diff.includes('sp_SetView')) {
-            patterns.push('View modifications detected');
-        }
-        if (diff.includes('sp_SetViewset')) {
-            patterns.push('Viewset modifications detected');
-        }
-    });
-    
-    return [...new Set(patterns)]; // Remove duplicates
-}
-
-// Add this new endpoint to server.js
+// Add this after your existing routes
 app.post('/analyze-issue', async (req, res) => {
-    const { issueId, issueTitle } = req.body;
-    const threshold = parseFloat(req.body.threshold || 0.4);
+    const { issueId, issueTitle, threshold } = req.body;
     
-    logger.info('Starting issue analysis', {
-        issueId,
-        issueTitle,
-        threshold
-    });
-
     try {
-        // Pass the threshold to getSimilarClosedIssues
-        const similarIssues = await getSimilarClosedIssues({ 
-            id: issueId, 
-            title: issueTitle 
-        }, 8, threshold);
-        
-        logger.info('Found similar issues', {
-            count: similarIssues.length
-        });
+        if (!issueId || !issueTitle) {
+            throw new Error('Missing required parameters');
+        }
 
-        // Step 2: Get merge requests for each similar issue
-        const mergeRequestPromises = similarIssues.map(issue => 
-            getMergeRequestsForIssue(issue.project_id, issue.iid)
+        const similarIssues = await getSimilarClosedIssues(
+            { id: issueId, title: issueTitle },
+            8, // groupId - you may want to make this configurable
+            threshold || 0.3 // default threshold lowered from 0.4 to 0.3
         );
-        
-        const mergeRequests = (await Promise.all(mergeRequestPromises))
-            .flat()
-            .filter(Boolean);
 
-        logger.info('Fetched merge requests', {
-            totalCount: mergeRequests.length
+        // Add the debug logging here where similarIssues is defined
+        logger.debug('Analyzing merge requests for issues', {
+            similarIssuesWithDetails: similarIssues.map(i => ({
+                id: i.id,
+                iid: i.iid,
+                project_id: i.project_id,
+                title: i.title,
+                references: i.references,
+                web_url: i.web_url
+            }))
         });
 
-        // Step 3: Analyze changes
-        const suggestions = await analyzeMergeRequestChanges(mergeRequests);
+        // Get merge requests for similar issues
+        const analyzedIssues = await Promise.all(
+            similarIssues.map(async (issue) => {
+                const projectId = issue.project_id;
+                const mergeRequests = await getMergeRequestsForIssue(projectId, issue.iid);
+                return {
+                    ...issue,
+                    mergeRequests
+                };
+            })
+        );
+
+        // Generate suggestions based on analyzed issues
+        const suggestions = await generateSuggestions(analyzedIssues);
 
         res.json({
-            similarIssues,
-            mergeRequests,
-            suggestions,
             status: {
                 similarIssues: 'completed',
                 mergeRequests: 'completed',
-                suggestions: suggestions.length > 0 ? 'completed' : 'pending'
+                suggestions: 'completed'
+            },
+            similarIssues: analyzedIssues,
+            suggestions
+        });
+
+    } catch (error) {
+        logger.error('Error analyzing issue:', {
+            error: error.message,
+            issueId,
+            issueTitle
+        });
+        
+        res.status(500).json({
+            error: error.message,
+            status: {
+                similarIssues: 'failed',
+                mergeRequests: 'failed',
+                suggestions: 'failed'
             }
         });
-
-    } catch (error) {
-        logger.error('Error analyzing issue', {
-            error: error.message,
-            stack: error.stack
-        });
-        res.status(500).json({
-            error: 'Failed to analyze issue',
-            details: error.message
-        });
     }
 });
 
-app.get('/initial-rate-limit', async (req, res) => {
-    try {
-        const response = await axios.head(`${GITLAB_URL}/api/v4/projects`, {
-            headers: { 'PRIVATE-TOKEN': GITLAB_TOKEN }
-        });
-        const rateLimit = await getRateLimitInfo(response);
-        res.json({ rateLimit });
-    } catch (error) {
-        res.status(500).json({
-            error: 'Failed to fetch rate limit',
-            details: error.message
-        });
-    }
-});
-
-function calculateSimilarity(sourceTitle, targetTitle) {
-    if (!sourceTitle || !targetTitle) return 0;
+async function generateSuggestions(analyzedIssues) {
+    const suggestions = [];
     
-    // Normalize strings and split into words
-    const sourceWords = sourceTitle.toLowerCase().split(/\s+/);
-    const targetWords = targetTitle.toLowerCase().split(/\s+/);
-    
-    // Calculate Jaccard similarity
-    const sourceSet = new Set(sourceWords);
-    const targetSet = new Set(targetWords);
-    const intersection = new Set([...sourceSet].filter(x => targetSet.has(x)));
-    const union = new Set([...sourceSet, ...targetSet]);
-    
-    const jaccardSimilarity = intersection.size / union.size;
-    
-    // Calculate word order similarity
-    let orderScore = 0;
-    sourceWords.forEach((word, index) => {
-        const targetIndex = targetWords.indexOf(word);
-        if (targetIndex !== -1) {
-            orderScore += 1 / (1 + Math.abs(index - targetIndex));
+    for (const issue of analyzedIssues) {
+        if (!issue.mergeRequests?.length) continue;
+        
+        for (const mr of issue.mergeRequests) {
+            // Look for specific patterns in the MR description or changes
+            if (mr.description?.includes('sp_SetView')) {
+                suggestions.push({
+                    type: 'SQL',
+                    title: 'View Configuration Update',
+                    description: 'Update view configuration in ezConfiguration.sql',
+                    specificChanges: await generateViewUpdateSuggestions({ 
+                        changes: mr.description.match(/sp_SetView[^;]+/g) || []
+                    })
+                });
+            }
+            
+            if (mr.description?.includes('sp_SetDropdown')) {
+                suggestions.push({
+                    type: 'SQL',
+                    title: 'Dropdown Configuration Update',
+                    description: 'Update dropdown configuration in ezConfiguration.sql',
+                    specificChanges: await generateDropdownUpdateSuggestions({
+                        changes: mr.description.match(/sp_SetDropdown[^;]+/g) || []
+                    })
+                });
+            }
         }
-    });
-    const orderSimilarity = orderScore / Math.max(sourceWords.length, targetWords.length);
+    }
     
-    // Combine scores with weights (70% Jaccard, 30% order)
-    const similarity = (jaccardSimilarity * 0.7) + (orderSimilarity * 0.3);
-    
-    logger.debug('Calculated similarity', {
-        sourceTitle,
-        targetTitle,
-        jaccardSimilarity,
-        orderSimilarity,
-        finalSimilarity: similarity
-    });
-
-    return similarity;
+    return suggestions;
 }

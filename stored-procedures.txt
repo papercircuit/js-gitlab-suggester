@@ -1,0 +1,437 @@
+{
+	// Place your global snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"Patch": {
+		"scope": "sql",
+		"prefix": ["patch"],
+		"body": ["--#${1:ticketNumber} - ${2:patchDescription}",
+				"IF NOT EXISTS (SELECT * FROM Patches WHERE ticketNumber = '${1:ticketNumber}')",
+				"BEGIN",
+				"",
+				"\t-- Insert record into the Patches table",
+				"\tINSERT INTO Patches ",
+				"\t(ticketNumber, description)",
+				"\tVALUES",
+				"\t('${1:ticketNumber}', '${2:patchDescription}')",
+				"",
+				"\t-- Run the actual patch",
+				"\t${3:patchCode}",
+				"END",
+				"GO"
+		],
+		"description": "DB Migration Patch"
+	},
+	"SetAcl": {
+		"scope": "sql",
+		"prefix": ["SetAcl"],
+		"body": ["EXECUTE sp_SetAcl '${1:aclName}'"],
+		"description": "Creates Stored Procedure for Creating ACLs"
+	},
+	"SetAce": {
+		"scope": "sql",
+		"prefix": ["SetAce"],
+		"body": ["EXECUTE sp_SetAcl '${1:aclName}', '${2:field}', '${3:operation}', '${4:valueOf}', '${5:orderOf}'"],
+		"description": "Creates Stored Procedure for Creating ACEs"
+	},
+	"SetAccessType": {
+		"scope": "sql",
+		"prefix": ["SetAccessType"],
+		"body": ["EXECUTE sp_SetAccessType '${1:aclName}', '${2:aceField}', '${3:aceOperation}', '${4:aceValueOf}', '${5:type}', '${6:valueOf}'"],
+		"description": "Creates Stored Procedure for Creating Access Types"
+	},
+	"SetNavElement": {
+		"scope": "sql",
+		"prefix": ["SetNavElement"],
+		"body": ["EXECUTE sp_SetNavElement '${1:parentName}', '${2:name}', '${3:display}', '${4:field}', '${5:orderOf}', '${6:rollup}', '${7:loggedIn}','${8:aclName}', '${9:query}', '${10:accessType}', '${11:link}', '${12:viewLink}', '${13:editLink}', '${14:releaseLink}', '${15:helpLink}'"],
+		"description": "Creates Stored Procedure for Creating Nav Elements"
+	},
+	"SetNavElementParentQuery": {
+		"scope": "sql",
+		"prefix": ["SetQueryParentNavElement"],
+		"body": ["EXECUTE sp_SetNavElement '', '${1:Query}', '${1:Query}', '${2:query}.${3:fieldName}', '${5:orderOf}, 0, 1, '${8:aclName}', '${2:query}', 'view', '/refreshobject.do?query=${2:query}', '/refreshobject.do?query=${2:query}', '/editobject.do?query=${2:query}', '/releaseobject.do?query=${2:query}', ''"],
+		"description": "Creates Stored Procedure for Creating Nav Elements"
+	},
+	"SetNavElementChildQuery": {
+		"scope": "sql",
+		"prefix": ["SetNavElementChildQuery"],
+		"body": ["EXECUTE sp_SetNavElement '${1:ParentName}', '${1:ParentName}.${2:Query}s', '${2:Query}s', '', 60, 1, 1, '', '${3:query}', 'query', '/queryobjects.do?query=${3:query}&viewset=default', '', '', '', ''"],
+		"description": "Creates Stored Procedure for Creating Nav Elements"
+	},
+	"SetPage": {
+		"scope": "sql",
+		"prefix": ["SetPage"],
+		"body": ["EXECUTE sp_SetPage '${1:navElementName}', '${2:name}', '${3:display}', '${4:body}', '${5:tabTypeView}', '${6:neededObjectField}', '${7:cantShowForward}'"],
+		"description": "Creates Stored Procedure for Creating Pages"
+	},
+	"SetPageQueryEdit": {
+		"scope": "sql",
+		"prefix": ["SetPageQueryEdit"],
+		"body": ["EXECUTE sp_SetPage '${1:Query}', 'edit${2:query}', 'Edit ${1:Query}', '/tiles/Edit${1:Query}_body.jsp', '0', '${2:query}.${2:query}id', '/releaseobject.do?query=${2:query}'"],
+		"description": "Creates Stored Procedure for Creating Pages"
+	},
+	"SetPageQueryView": {
+		"scope": "sql",
+		"prefix": ["SetPageQueryView"],
+		"body": ["EXECUTE sp_SetPage '${1:Query}', 'view${2:query}', 'View ${1:Query}', '/tiles/View{1:Query}_body.jsp', '1', '${2:query}.${2:query}id', '/releaseobject.do?query=${2:query}'"],
+		"description": "Creates Stored Procedure for Creating Pages"
+	},
+	"SetPageQueryInsert": {
+		"scope": "sql",
+		"prefix": ["SetPageQueryInsert"],
+		"body": ["EXECUTE sp_SetPage '${1:ParentName}.${2:Query}s', 'insert${3:query}', 'Insert ${2:Query}', '/tiles/Insert${2:Query}_body.jsp', NULL, '', ''"],
+		"description": "Creates Stored Procedure for Creating Pages"
+	},
+	"SetPageQuerySelect": {
+		"scope": "sql",
+		"prefix": ["SetPageQuerySelect"],
+		"body": ["EXECUTE sp_SetPage '${1:ParentName}.${2:Query}s', 'select${3:query}default', 'Select ${2:Query}', '/tiles/Select${2:Query}_body.jsp', NULL, '', ''"],
+		"description": "Creates Stored Procedure for Creating Pages"
+	},
+	"SetViewset": {
+		"scope": "sql",
+		"prefix": ["SetViewset"],
+		"body": ["EXECUTE sp_SetViewset '${1:query}', '${2:name}', '${3:orderOf}', '${4:rowsPerGrid}', '${5:viewFile}'"],
+		"description": "Creates Stored Procedure for Creating Viewsets"
+	},
+	"SetView": {
+		"scope": "sql",
+		"prefix": ["SetView"],
+		"body": ["EXECUTE sp_SetView '${1:viewsetQuery}', '${2:viewsetName}', '${3:name}', '${4:extends}', '${5:aclName}', '${6:orderOf}','${7:rowsPerGrid}', '${8:sort}', '${9:descending}', '${10:secondarySort}', '${11:defaultUsrField}', '${12:defaultOperation}', '${13:defaultValue}', '${14:cacheType}'"],
+		"description": "Creates Stored Procedure for Creating Views"
+	},
+	"SetQueryColumn": {
+		"scope": "sql",
+		"prefix": ["SetQueryColumn"],
+		"body": ["EXECUTE sp_SetQueryColumn '${1:viewsetQuery}', '${2:viewsetName}', '${3:viewName}', '${4:name}', '${5:orderOf}', '${6:special}'"],
+		"description": "Creates Stored Procedure for Creating Query Columns"
+	},
+	"SetWhereClause": {
+		"scope": "sql",
+		"prefix": ["SetWhereClause"],
+		"body": ["EXECUTE sp_SetWhereClause '${1:viewsetQuery}', '${2:viewsetName}', '${3:aceOperation}', '${4:aceValueOf}', '${5:type}', '${6:valueOf}'"],
+		"description": "Creates Stored Procedure for Creating Where Clauses"
+	},
+	"SetViewsetAlias": {
+		"scope": "sql",
+		"prefix": ["SetViewsetAlias"],
+		"body": ["EXECUTE sp_SetViewsetAlias '${1:aclName}', '${2:aceField}', '${3:viewName}', '${4:qryColumn}', '${5:operation}', '${6:valueOf}', '${7:primitiveValue}', '${8:valueTable}', '${9:valueColumn}', '${10:whereOr}'"],
+		"description": "Creates Stored Procedure for Creating Viewset Alisases"
+	},
+	"SetReport": {
+		"scope": "sql",
+		"prefix": ["SetReport"],
+		"body": ["EXECUTE sp_SetReport '${1:id}', '${2:url}', '${3:page}', '${4:group}', '${5:name}', '${6:description}', '${7:type}', '${8:promptPage}', '${9:active}', '${10:notes}'"],
+		"description": "Creates Stored Procedure for Creating Reports"
+	},
+	"SetReportParameter": {
+		"scope": "sql",
+		"prefix": ["SetReportParameter"],
+		"body": ["EXECUTE sp_SetReportParameter '${1:reportId}', '${2:name}', '${3:value}'"],
+		"description": "Creates Stored Procedure for Creating Report Parameters"
+	},
+	"SetDropdown": {
+		"scope": "sql",
+		"prefix": ["SetDropdown"],
+		"body": ["EXECUTE sp_SetDropdown '${1:field}', '${2:display}', '${3:valueOf}', '${4:aclName}', '${5:orderOf}'"],
+		"description": "Creates Stored Procedure for Creating Drop Downs"
+	},
+	"SetSqlButton": {
+		"scope": "sql",
+		"prefix": ["SetSqlButton"],
+		"body": ["EXECUTE sp_SetSqlButton '${1:aclName}', '${2:name}', '${3:grid}', '${4:link}',",
+				"'${5:sqlStmt}',",
+				"'${6:accessType}','${7:forward}', '${8:btnText}', '${9:orderOf}', '${10:parameters}', '${11:active}', '${12:cacheQuery}', '${13:refreshObject}', '${14:sendEmail}', '${15:noReply}', '${16:emailTo}', '${17:emailCC}', '${18:emailSubject}', '${19:emailMessage}'",
+				"GO"],
+		"description": "Creates Stored Procedure for Creating SQL Buttons"
+	},
+	"SetTrigger": {
+		"scope": "sql",
+		"prefix": ["SetTrigger"],
+		"body": ["EXECUTE sp_SetTrigger '${1:query}', '${2:actionQuery}', '${3:triggerType}', '${4:actionType}', '${5:link}', '${6:queryColumn}',",
+				"'${7:sqlStmt}',",
+				"'${8:refreshObject}', '${9:name}', '${10:cacheQuery}', '${11:active}', '${12:orderBy}', '${13:emailTo}', '${14:emailCC}', '${15:noReply}', '${16:emailSubject}', '${17:emailMessage}', '${18:sendEmail}'",
+				"GO"],
+		"description": "Creates Stored Procedure for Creating Triggers"
+	},
+	"AddColumn": {
+		"scope": "sql",
+		"prefix": ["AddColumn"],
+		"body": ["EXECUTE sp_AddColumn '${1:table}', '${2:column}', '${3|VARCHAR(20) NOT NULL DEFAULT (''''),DATETIME2 NULL,TEXT NULL,BIGINT NULL,BIT NULL|}'"],
+		"description": "Calls Stored Procedure for Adding Column"
+	},
+	"QueryColumn": {
+		"scope": "xml",
+		"prefix": ["QueryColumn"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\"/>"],
+		"description": "Creates a Basic QueryColumn Record in PanosoftLibrary"
+	},
+	"QueryColumnDefault": {
+		"scope": "xml",
+		"prefix": ["QueryColumnDefault"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\" default=\"${6:default}\"/>"],
+		"description": "Creates a QueryColumn Record for creating a field with a default"
+	},
+	"QueryColumnDefaultField": {
+		"scope": "xml",
+		"prefix": ["QueryColumnDefaultField"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\" default=\"[{${6:default}}]\"/>"],
+		"description": "Creates a QueryColumn Record for creating a field with a default fron an in session field"
+	},
+	"QueryColumnPhone": {
+		"scope": "xml",
+		"prefix": ["QueryColumnPhone"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\" inputType=\"phone\" />"],
+		"description": "Creates a QueryColumn Record for creating a phone field"
+	},
+	"QueryColumnSelect": {
+		"scope": "xml",
+		"prefix": ["QueryColumnSelect"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\" inputType=\"select\" />"],
+		"description": "Creates a QueryColumn Record for creating a select field"
+	},
+	"QueryColumnSelectCache": {
+		"scope": "xml",
+		"prefix": ["QueryColumnSelectCache"],
+		"body": ["<queryColumn name=\"${1:column}\" qryTable=\"${2:table}\" displayName=\"${3:display}\" inputType=\"select\" type=\"${5:type}\" />"],
+		"description": "Creates a QueryColumn Record for creating a select field based on a cache"
+	},
+	"PanoFieldDisplayEdit": {
+		"scope": "jsp",
+		"prefix": ["PanoFieldDisplayEdit"],
+		"body": ["<td><pano:field name=\"${1:field}\" type=\"display_name\" /></td>',",
+			"<td><pano:field name=\"${1:field}\" type=\"edit\"  /></td>"],
+		"description": "Creates Field Display and Edit field"
+	},
+	"InsertQuery_body.jsp": {
+		"scope": "",
+		"prefix": ["InsertQuery_body.jsp"],
+		"body": ["<%@ taglib uri=\"/WEB-INF/tld/struts-tiles.tld\" prefix=\"tiles\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/pano.tld\" prefix=\"pano\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-bean.tld\" prefix=\"bean\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-html.tld\" prefix=\"html\"%>",
+				"<%@ page import=\"java.util.HashMap\"%>",
+				"<%@ page import=\"org.apache.struts.action.Action\"%>",
+				"<%@ page import=\"panosoft.common.WebToolkitConstants\"%>",
+				"<%@ page import=\"panosoft.library.WebToolkit\"%>",
+				"<%@ page import=\"panosoft.action.BaseToolkitAction\"%>",
+				"<%",
+				"\t@SuppressWarnings(\"unchecked\")",
+				"\tHashMap<String, Object> state = (HashMap<String, Object>) session.getAttribute(WebToolkitConstants.SESSIONSTATE_KEY);",
+				"\trequest.setAttribute(org.apache.struts.action.Action.ERROR_KEY, BaseToolkitAction.getErrors(request, state));",
+				"",
+				"\trequest.setAttribute(\"insert${1:Query}\", \"true\");",
+				"%>",
+				"",
+				"<html:errors />",
+				"<pano:form query=\"${1:Query}\" action=\"/insertobject\" >",
+				"\t<h1>Insert ${2:Query Display Name}</h1>",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<td><html:submit property=\"submit\" value=\"Save\" /></td>",
+				"\t\t\t<td><html:submit property=\"reinsert\" value=\"Save and Re-Insert\" /></td>",
+				"\t\t</tr>",
+				"\t</table>",
+				"\t<tiles:insert template=\"/tiles/common/${1:Query}_body.jsp\" />",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<td><html:submit property=\"submit\" value=\"Save\" /></td>",
+				"\t\t\t<td><html:submit property=\"reinsert\" value=\"Save and Re-Insert\" /></td>",
+				"\t\t</tr>",
+				"\t</table>",
+				"</pano:form>"],
+		"description": "Creates InsertQuery_body.jsp"
+	},
+	"EditQuery_body.jsp": {
+		"scope": "",
+		"prefix": ["EditQuery_body.jsp"],
+		"body": ["<%@ taglib uri=\"/WEB-INF/tld/struts-tiles.tld\" prefix=\"tiles\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/pano.tld\" prefix=\"pano\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-bean.tld\" prefix=\"bean\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-html.tld\" prefix=\"html\"%>",
+				"<%@ page import=\"java.util.HashMap\"%>",
+				"<%@ page import=\"org.apache.struts.action.Action\"%>",
+				"<%@ page import=\"panosoft.common.WebToolkitConstants\"%>",
+				"<%@ page import=\"panosoft.library.WebToolkit\"%>",
+				"<%@ page import=\"panosoft.action.BaseToolkitAction\"%>",
+				"<%",
+				"\t@SuppressWarnings(\"unchecked\")",
+				"\tHashMap<String, Object> state = (HashMap<String, Object>) session.getAttribute(WebToolkitConstants.SESSIONSTATE_KEY);",
+				"\trequest.setAttribute(org.apache.struts.action.Action.ERROR_KEY, BaseToolkitAction.getErrors(request, state));",
+				"",
+				"\trequest.setAttribute(\"edit${1:Query}\", \"true\");",
+				"%>",
+				"",
+				"<html:errors />",
+				"<pano:form query=\"${1:Query}\" action=\"/updateobject\" >",
+				"\t<h1>Edit ${2:Query Display Name}</h1>",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<td><html:submit property=\"submit\" value=\"Save Changes\" /></td>",
+				"\t\t\t<td><html:submit property=\"saveeditprev\" value=\"<-Save and Edit Prev\" /></td>",
+				"\t\t\t<td><pano:viewNextPrev query=\"${1:Query}\" /></td>",
+				"\t\t\t<td><html:submit property=\"saveeditnext\" value=\"Save and Edit Next->\" /></td>",
+				"\t\t</tr>",
+				"\t</table>",
+				"\t<tiles:insert template=\"/tiles/common/${1:Query}_body.jsp\" />",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<td><html:submit property=\"submit\" value=\"Save Changes\" /></td>",
+				"\t\t</tr>",
+				"\t</table>",
+				"</pano:form>"],
+		"description": "Creates EditQuery_body.jsp"
+	},
+	"ViewQuery_body.jsp": {
+		"scope": "",
+		"prefix": ["ViewQuery_body.jsp"],
+		"body": ["<%@ taglib uri=\"/WEB-INF/tld/pano.tld\" prefix=\"pano\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-logic.tld\" prefix=\"logic\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-bean.tld\" prefix=\"bean\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-html.tld\" prefix=\"html\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-tiles.tld\" prefix=\"tiles\"%>",
+				"<%",
+				"\trequest.setAttribute(panosoft.common.WebToolkitConstants.READONLY_KEY, \"true\");",
+				"",
+				"\trequest.setAttribute(\"view${1:Query}\", \"true\");",
+				"%>",
+				"",
+				"<html:errors />",
+				"<pano:form query=\"${1:Query}\" action=\"\">",
+				"\t<h1>View ${2:Query Display Name}</h1>",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<td><input type=\"button\" value=\"<-Prev\" onClick=\"Previous(this.form,'${1:Query}');\" /></td>",
+				"\t\t\t<td><pano:viewNextPrev query=\"${1:Query}\" /></td>",
+				"\t\t\t<td><input type=\"button\" value=\"Next->\" onClick=\"Next(this.form,'${1:Query}');\" /></td>",
+				"\t\t</tr>",
+				"\t</table>",
+				"\t<tiles:insert template=\"/tiles/common/${1:Query}_body.jsp\" />",
+				"</pano:form>"],
+		"description": "Creates ViewQuery_body.jsp"
+	},
+	"SelectQuery_body.jsp": {
+		"scope": "",
+		"prefix": ["SelectQuery_body.jsp"],
+		"body": ["<%@ taglib uri=\"/WEB-INF/tld/struts-tiles.tld\" prefix=\"tiles\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-logic.tld\" prefix=\"logic\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-bean.tld\" prefix=\"bean\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/struts-html.tld\" prefix=\"html\"%>",
+				"<%@ taglib uri=\"/WEB-INF/tld/pano.tld\" prefix=\"pano\"%>",
+				"<%@ page import=\"panosoft.common.WebToolkitConstants\"%>",
+				"<%@ page import=\"panosoft.library.WebToolkit\"%>",
+				"<%@ page import=\"panosoft.bean.QueryResult\"%>",
+				"<%@ page import=\"java.util.HashMap\"%>",
+				"<%",
+				"\tWebToolkit toolkit = (WebToolkit) session.getServletContext().getAttribute(WebToolkitConstants.LIBRARY_KEY);",
+				"\t@SuppressWarnings(\"unchecked\")",
+				"\tHashMap<String, Object> state = (HashMap<String, Object>) session.getAttribute(WebToolkitConstants.SESSIONSTATE_KEY);",
+				"%>",
+				"",
+				"<html:errors />",
+				"<html:form action=\"/searchobjects\" focus=\"search\" onsubmit=\"setupDetail(this);return true;\">",
+				"\t<html:hidden property=\"query\" value=\"<%=request.getParameter(\\\"query\\\")%>\" />",
+				"\t<html:hidden property=\"viewset\" value=\"<%=request.getParameter(\\\"viewset\\\")%>\" />",
+				"\t<html:hidden property=\"view\" value=\"<%=request.getParameter(\\\"view\\\")%>\" />",
+				"\t<html:hidden property=\"selection\" value=\"<%=request.getParameter(\\\"selection\\\")%>\" />",
+				"\t<html:hidden property=\"order\" value=\"<%=request.getParameter(\\\"order\\\")%>\" />",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<th><pano:field name=\"search\" type=\"search\" /></th>",
+				"\t\t\t<td><pano:detailSearch /></td>",
+				"\t\t\t<td><html:submit property=\"submit\" value=\"Search\" /></td>",
+				"\t\t\t<pano:contextSearch />",
+				"\t\t\t<%=((QueryResult) request.getAttribute(WebToolkitConstants.QUERYRESULT_KEY)).getQueryFilter(state)%>",
+				"\t\t\t<td><pano:viewSelect query=\"${1:query}\" target=\"queryobjects.do?query=${1:query}\" /></td>",
+				"\t\t\t<pano:insertButton />",
+				"\t\t</tr>",
+				"\t</table>",
+				"<%",
+				"\tif (request.getParameter(\"detailsearch\") != null) {",
+				"%>",
+				"\t<%=((QueryResult) request.getAttribute(WebToolkitConstants.QUERYRESULT_KEY)).getPaging(request, state, request.getContextPath() + \"/queryobjects.do\")%>",
+				"\t<table class=\"selectGrid\">",
+				"\t\t<bean:write name=\"query_result\" property=\"tableHeaderJustResults\" filter=\"false\" />",
+				"\t\t<bean:write name=\"query_result\" property=\"tableSearchColumns\" filter=\"false\" />",
+				"\t\t<logic:iterate id=\"row\" name=\"query_result\" property=\"queryRows\">",
+				"\t\t\t<bean:write name=\"row\" property=\"displayStringJustResults\" filter=\"false\" />",
+				"\t\t</logic:iterate>",
+				"\t</table>",
+				"\t<%=((QueryResult) request.getAttribute(WebToolkitConstants.QUERYRESULT_KEY)).getPaging(request, state, request.getContextPath() + \"/queryobjects.do\")%>",
+				"<%",
+				"\t}",
+				"\telse {",
+				"%>",
+				"\t<%=((QueryResult) request.getAttribute(WebToolkitConstants.QUERYRESULT_KEY)).getPaging(request, state, request.getContextPath() + \"/searchobjects.do\")%>",
+				"\t<table class=\"selectGrid\">",
+				"\t\t<bean:write name=\"query_result\" property=\"tableHeader\" filter=\"false\" />",
+				"\t\t<logic:iterate id=\"row\" name=\"query_result\" property=\"queryRows\">",
+				"\t\t\t<bean:write name=\"row\" property=\"displayString\" filter=\"false\" />",
+				"\t\t</logic:iterate>",
+				"\t</table>",
+				"\t<%=((QueryResult) request.getAttribute(WebToolkitConstants.QUERYRESULT_KEY)).getPaging(request, state, request.getContextPath() + \"/searchobjects.do\")%>",
+				"<%",
+				"\t}",
+				"%>",
+				"\t<table>",
+				"\t\t<tr>",
+				"\t\t\t<pano:GridReports page=\"${2:QueryGrid}\" />",
+				"\t\t\t<pano:GridSQLButtons />",
+				"\t\t</tr>",
+				"\t</table>",
+				"\t<pano:canAccessAcl acl=\"panoramic\" type=\"view\">",
+				"\t\t<pano:showSQL />",
+				"\t</pano:canAccessAcl>",
+				"</html:form>"],
+		"description": "Creates SelectQuery_body.jsp"
+	},
+	"CommonQuery_body.jsp": {
+		"scope": "",
+		"prefix": ["Common Query_body.jsp"],
+		"body": ["<%@ taglib uri=\"/WEB-INF/tld/pano.tld\" prefix=\"pano\"%>",
+			"<%@ page import=\"panosoft.common.WebToolkitConstants\"%>",
+			"<%@ page import=\"panosoft.library.WebToolkit\"%>",
+			"<%@ page import=\"java.util.HashMap\"%>",
+			"<%",
+			"\tWebToolkit toolkit = (WebToolkit) session.getServletContext().getAttribute(WebToolkitConstants.LIBRARY_KEY);",
+			"\tHashMap<String, Object> state = (HashMap<String, Object>) session.getAttribute(WebToolkitConstants.SESSIONSTATE_KEY);",
+			"%>",
+			"",
+			"<script type=\"text/javascript\">",
+			"$(function () {",
+			"});",
+			"</script>",
+			"",
+			"<style type=\"text/css\">",
+			"th {background: <%=toolkit.getBorderColor((java.util.HashMap) session.getAttribute(WebToolkitConstants.SESSIONSTATE_KEY))%>;}",
+			"</style>",
+			"",
+			"<pano:field name=\"${1:Query.primaryKeyId}\" type=\"hidden\" />",
+			"<pano:field name=\"${2:Query.agencyId}\" type=\"hidden\" />",
+			"<table class=\"t1\">",
+			"\t<tr>",
+			"\t\t<th>${3:Section Title}</th>",
+			"\t</tr>",
+			"\t<tr>",
+			"\t\t<td>",
+			"\t\t<table>",
+			"\t\t</table>",
+			"\t\t</td>",
+			"\t</tr>",
+			"</table>"],
+		"description": "Creates Common Query_body.jsp"
+	}
+}

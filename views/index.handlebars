@@ -26,9 +26,8 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             margin: 15px 0;
-            padding: 20px;
+            padding: 15px;
             background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .file-changes {
             background: #f6f8fa;
@@ -130,6 +129,40 @@
         .project-name {
             color: #6f42c1;
             font-weight: 500;
+        }
+
+        .code-suggestion {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .file-type-indicator {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+
+        .file-type-sql {
+            background: #e6f3ff;
+            color: #0066cc;
+        }
+
+        .file-type-jsp {
+            background: #fff3e6;
+            color: #cc6600;
+        }
+
+        .related-files {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -403,17 +436,65 @@
                 const suggestionsList = document.getElementById('file-suggestions-list');
                 suggestionsList.innerHTML = data.suggestions.map(suggestion => `
                     <div class="suggestion-card">
-                        <h4>${suggestion.type} Changes</h4>
-                        <p>${suggestion.suggestion}</p>
+                        <div class="suggestion-header">
+                            <span class="file-type-indicator file-type-${suggestion.type.toLowerCase()}">${suggestion.type}</span>
+                            <h4>${suggestion.suggestion}</h4>
+                        </div>
+                        
                         <div class="changes-list">
-                            <h5>Files to Consider:</h5>
-                            <ul>
-                                ${suggestion.files ? suggestion.files.map(file => `<li>${file}</li>`).join('') : ''}
-                            </ul>
-                            <h5>Common Patterns:</h5>
-                            <ul>
-                                ${suggestion.commonPatterns ? suggestion.commonPatterns.map(pattern => `<li>${pattern}</li>`).join('') : ''}
-                            </ul>
+                            ${suggestion.files ? `
+                                <div class="related-files">
+                                    <h5>Files to Consider:</h5>
+                                    <ul>
+                                        ${suggestion.files.map(file => `
+                                            <li>
+                                                <code>${file}</code>
+                                                ${file.endsWith('.jsp') ? 
+                                                    `<small>(JSP Template)</small>` : 
+                                                    file.endsWith('.sql') ? 
+                                                    `<small>(SQL Definition)</small>` : ''}
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${suggestion.commonPatterns ? `
+                                <div class="patterns-section">
+                                    <h5>Detected Patterns:</h5>
+                                    <ul>
+                                        ${suggestion.commonPatterns.map(pattern => `
+                                            <li><code>${pattern}</code></li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                            
+                            ${suggestion.specificChanges ? `
+                                <div class="code-changes">
+                                    <h5>Suggested Code Changes:</h5>
+                                    ${suggestion.specificChanges.map(change => `
+                                        <pre class="code-suggestion">
+                                            ${change}
+                                        </pre>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            ${suggestion.type === 'JSP' ? `
+                                <div class="template-info">
+                                    <h5>Template Type:</h5>
+                                    <p>This appears to be a ${suggestion.templateType || 'standard'} template modification.</p>
+                                    ${suggestion.relatedTemplates ? `
+                                        <h5>Related Templates:</h5>
+                                        <ul>
+                                            ${suggestion.relatedTemplates.map(template => `
+                                                <li><code>${template}</code></li>
+                                            `).join('')}
+                                        </ul>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `).join('');
